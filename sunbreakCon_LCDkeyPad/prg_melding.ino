@@ -56,7 +56,7 @@ void meldingVigor() {
   if (lap == 10) {
     pushHat(Hat::DOWN, 50, 50, 2);  // 決定までのカーソル移動
     pushButton(confirmButton);      // 釜選択
-    meldingStop = 5;
+    meldingStop = 3;
     repeatMelding();  // 錬成結果画面動作
   }
 }
@@ -117,7 +117,7 @@ void repeatMelding() {
 void sellEquipment() {
   if (lap <= 50) {
     lap++;
-    lcd.setCursor(12, 0);
+    lcd.setCursor(13, 0);
     lcd.cursor();
     pushButton(Button::X);      // 選択
     pushButton(confirmButton);  // YES
@@ -130,7 +130,7 @@ void sellEquipment() {
   }
   if (lap == 50) {
     pushButton(Button::R, 100);
-    meldingStop = 7;
+    meldingStop = 2;
     steyMode2 = false;
     lcd.noCursor();
   }

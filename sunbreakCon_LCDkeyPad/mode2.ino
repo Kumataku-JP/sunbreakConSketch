@@ -19,20 +19,13 @@
  *    ab/cd  1つ目（a=ページ、b=上から何個目）  ／  2つ目（c=ページ、d=上から何個目）
  *    初期値  11/00  （1ページ目の1個目を指定）2つ目の素材指定なしで1つ目のみ選択
  *
- *  4.錬金カウンターをリセット
- *
- *  5.装備売却  1ページ(50装備)分を売却
+ *  4.装備売却  1ページ(50装備)分を売却
  *            画面が高速にチラつくので癲癇等に注意
  *
  *
 */
 
 void mode2() {
-
-  if (value == 0) {
-    lcd.setCursor(0, 0);
-    displayString(value, 2);  //SelectMelding>LR
-  }
 
   keys = read_LCD_buttons(analogRead(0));
 
@@ -41,14 +34,14 @@ void mode2() {
   if (!dateSet) {
     if (keys == btnRIGHT) {
       value++;
-      if (value > 5) value = 1;  // 1から5へトグル
+      if (value > 4) value = 1;  // 1から4へトグル
       lcd.clear();
       lcdMelding();  //LCD表示
       delay(250);
     }
     if (keys == btnLEFT) {
       value--;
-      if (value < 1) value = 5;  // 5から1へトグル
+      if (value < 1) value = 4;  // 4から1へトグル
       lcd.clear();
       lcdMelding();  //LCD表示
       delay(250);
@@ -93,7 +86,7 @@ void mode2() {
             lap = 0;
           }
           if (repeatCountMelding == 0) {
-            meldingStop = 6;
+            meldingStop = 5;
             repeatCountMelding = numDate;
             steyMode2 = false;
           }
@@ -107,20 +100,11 @@ void mode2() {
         lcd.print(" STP>S");
         meldingCyclus();
       }
-      // マカ錬金カウンターリセット
-      else if (value == 4) {
-        lcd.setCursor(11, 1);
-        lcd.print("     ");
-        delay(500);
-        countM = 0;  //マカ錬金神気セットカウント
-        meldingStop = 3;
-        steyMode2 = false;
-      }
       // 装備売却
-      else if (value == 5) {
-        meldingStop = 8;
-        lcd.setCursor(12, 0);
-        lcd.print(" RUN");
+      else if (value == 4) {
+        meldingStop = 2;
+        lcd.setCursor(10, 0);
+        lcd.print("RUN");
         lcd.setCursor(10, 1);
         lcd.print(" STP>S");
         sellEquipment();
@@ -129,9 +113,11 @@ void mode2() {
     /* ストップ後のLCD表示 */
     if (!steyMode2) {
       switch (meldingStop) {
+        case 0:
+          break;
         case 1:
-          lcd.setCursor(9, 0);
-          lcd.print(" STP");
+          lcd.setCursor(10, 0);
+          lcd.print("STP");
           lcd.setCursor(10, 1);
           lcd.print("ReST>S");
           lap = 0;
@@ -149,9 +135,11 @@ void mode2() {
           meldingStop = 0;
           break;
         case 3:
-          lcd.setCursor(11, 1);
-          lcd.print("RESET");
-          delay(500);
+          lcdSetMaterial();
+          lcd.setCursor(10, 0);
+          lcd.print("End");
+          lap = 0;
+          delay(50);
           meldingStop = 0;
           break;
         case 4:
@@ -161,38 +149,9 @@ void mode2() {
           meldingStop = 0;
           break;
         case 5:
-          lcdSetMaterial();
-          lcd.setCursor(10, 0);
-          lcd.print("End");
+          lcdMelding();  //LCD表示
           lap = 0;
           delay(50);
-          meldingStop = 0;
-          break;
-        case 6:
-          lcd.setCursor(9, 0);
-          lcd.print("End");
-          lcd.setCursor(10, 1);
-          lcd.print(" SRT>S");
-          lap = 0;
-          delay(50);
-          meldingStop = 0;
-          break;
-        case 7:
-          lcd.setCursor(13, 0);
-          lcd.print("End");
-          lcd.setCursor(10, 1);
-          lcd.print(" SRT>S");
-          lap = 0;
-          delay(50);
-          meldingStop = 0;
-          break;
-        case 8:
-          lcd.setCursor(12, 0);
-          lcd.print("STOP");
-          lcd.setCursor(10, 1);
-          lcd.print("ReST>S");
-          lap = 0;
-          delay(500);
           meldingStop = 0;
           break;
       }
@@ -313,8 +272,7 @@ void lcdMelding() {
     }
   }
   if (value == 3) lcd.print(" SRT>S");
-  if (value == 4) lcd.print(" RST>S");
-  if (value == 5) lcd.print("SELL>S");
+  if (value == 4) lcd.print("SELL>S");
 }
 /* 素材設定LCD表示 */
 void lcdSetMaterial() {
@@ -329,10 +287,10 @@ void lcdSetMaterial() {
   lcd.print(text);
   sprintf(text, "%01d", line_2);
   lcd.print(text);
-  mPosition();
+  meldingPosition();
 }
-/* LCDカーソルの位置制御 */
-void mPosition() {
+/* カーソルの位置制御 */
+void meldingPosition() {
   if (cursorPosition == 1) lcd.setCursor(11, 1);       //
   else if (cursorPosition == 2) lcd.setCursor(12, 1);  //
   else if (cursorPosition == 3) lcd.setCursor(14, 1);  //
@@ -350,11 +308,11 @@ void updateCountMelding() {
     lcd.print(digitsM[(int)i]);
   }
 }
-/* のこり福引回数LCD表示 */
+/* のこりマカ回数LCD表示 */
 void lcdCountMelding(int count) {
   char text[3];
   lcd.setCursor(9, 0);
   lcd.print("S");
-  sprintf(text, "%2d", count);
+  sprintf(text, "%02d", count);
   lcd.print(text);
 }

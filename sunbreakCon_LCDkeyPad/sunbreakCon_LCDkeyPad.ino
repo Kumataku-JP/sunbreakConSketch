@@ -2,7 +2,7 @@
  *  Nintendo Switch
  *  PlayStation 5
  *  モンハンライズサンブレイク  Ver.16.0.x
- *  プログラムセット Ver.3.5
+ *  プログラムセット Ver.3.8
  *
  *  DOWN-UPボタンでモードの切り替え
  *  モード0  システム設定  / System Setting
@@ -165,56 +165,54 @@ char *jp(const char *text) {
 bool languageFlag = 1;  // 言語のフラグ (0: 英語, 1: 日本語)
 // モード  0
 const char *strings_I[][2] = {
-  { " MODE>UP-DWN", " ﾓｰﾄﾞ>ｳｴorｼﾀ" },  // 0
-  { "Qurious", "ｶｲｲﾚﾝｾｲ" },            // 1
-  { "Melding", "ﾏｶﾚﾝｷﾝ" },             // 2
-  { "AutoPlay", "ｼﾞﾄﾞｳ" },             // 3
-  { "amiibo", "ｱﾐｰﾎﾞ" },               // 4
+  { "MENU", "ﾒﾆｭｰ" },        // 0
+  { "Qurious", "ｶｲｲﾚﾝｾｲ" },  // 1
+  { "Melding", "ﾏｶﾚﾝｷﾝ" },   // 2
+  { "AutoPlay", "ｼﾞﾄﾞｳ" },   // 3
+  { "amiibo", "ｱﾐｰﾎﾞ" },     // 4
 };
 // 傀異錬成  1（9文字）
 const char *strings_Q[][2] = {
-  { "SelectEssence>LR", "ｼﾖｳｺﾊｸｦｾﾝﾀｸ  >LR" },  // 0
-  { "Amber", "ｾｲｷ" },                          // 1
-  { "Plus", "ｼﾞｮｳ" },                          // 2
-  { "Prime", "ｾﾝ" },                           // 3
-  { "Royal", "ｵｳ" },                           // 4
-  { "Pure", "ｼﾝ" },                            // 5
-  { "CountRST", "ｶｳﾝﾀｰﾘｾｯﾄ" },                 // 6
-  { "RepeatRec", "ﾚﾝｾｲｷﾛｸ" },                  // 7
-  { "RepeatQUR", "ﾚﾝｾｲｸﾘｶｴｼ" },                // 8
-  { "CountSet", "ｶｲｽｳｾｯﾃｲ" },                  // 9
+  { "SelectEssence", "ｼﾖｳｺﾊｸｦｾﾝﾀｸ" },  // 0
+  { "Amber", "ｾｲｷ" },                  // 1
+  { "Plus", "ｼﾞｮｳ" },                  // 2
+  { "Prime", "ｾﾝ" },                   // 3
+  { "Royal", "ｵｳ" },                   // 4
+  { "Pure", "ｼﾝ" },                    // 5
+  { "RepeatRec", "ﾚﾝｾｲｷﾛｸ" },          // 6
+  { "RepeatQUR", "ﾚﾝｾｲｸﾘｶｴｼ" },        // 7
+  { "CountSet", "ｶｲｽｳｾｯﾃｲ" },          // 8
 };
 // マカ錬金  2（11文字）
 const char *strings_M[][2] = {
-  { "SelectMelding>LR", "ﾚﾝｷﾝｦｾﾝﾀｸ    >LR" },  // 0
-  { "MulTask", "ﾊｷﾏﾙﾁｾｯﾃｲ" },                    // 1
-  { "Vigor", "ﾊｷ" },                           // 2
-  { "Cyclus", "ｴﾝｶﾝ" },                        // 3
-  { "ResetCount", "ｶｳﾝﾀｰﾘｾｯﾄ" },               // 4
-  { "Sell EQPT ", "ﾊﾞｲｷｬｸ" },                  // 5
+  { "SelectMelding", "ﾚﾝｷﾝｦｾﾝﾀｸ" },  // 0
+  { "MulTask", "ﾊｷﾏﾙﾁｾｯﾃｲ" },        // 1
+  { "Vigor", "ﾊｷ" },                 // 2
+  { "Cyclus", "ｴﾝｶﾝ" },              // 3
+  { "Sell EQPT ", "ﾊﾞｲｷｬｸ" },        // 4
 };
 // 自動プレイ  3（13文字）
 const char *strings_A[][2] = {
-  { "SelectAutoTyp>LR", "ｼﾞﾄﾞｳｺｳﾓｸｾﾝﾀｸ>LR" },  // 0
-  { "Arena", "ﾄｳｷﾞｼﾞｮｳ" },                     // 1
-  { "Infernal", "ｺﾞｸｾﾝｷｮｳ" },                  // 2
-  { "Forlorn", "ﾄｳﾉﾋｷｮｳ" },                    // 3
-  { "ItemGath", "ﾄｸｻﾝﾋﾝ" },                    // 4
+  { "SelectAutoTyp", "ｼﾞﾄﾞｳｺｳﾓｸｾﾝﾀｸ" },  // 0
+  { "Arena", "ﾄｳｷﾞｼﾞｮｳ" },               // 1
+  { "Infernal", "ｺﾞｸｾﾝｷｮｳ" },            // 2
+  { "Forlorn", "ﾄｳﾉﾋｷｮｳ" },              // 3
+  { "ArenaAuto   ", "ﾄｳｷﾞｼﾞｮｳｵｰﾄ " },    // 4
+  { "ItemGath", "ﾄｸｻﾝﾋﾝ" },              // 5
 };
 // amiibo福引  4
 const char *strings_F[][2] = {
-  { "SelectLottery>LR", "ﾌｸﾋﾞｷｺｳﾓｸｾﾝﾀｸ>LR" },  // 0
-  { "Lottery", "ﾌｸﾋﾞｷ  " },                    // 1
-  { "Setting", "ｾｯﾃｲ  " },                     // 2
+  { "SelectLottery", "ﾌｸﾋﾞｷｺｳﾓｸｾﾝﾀｸ" },  // 0
+  { "Lottery", "ﾌｸﾋﾞｷ  " },              // 1
+  { "Setting", "ｾｯﾃｲ   " },              // 2
 };
 // 設定  5
 const char *strings_S[][2] = {
-  { "Configuration", "ｼｽﾃﾑｾｯﾃｲ" },             // 0
-  { "VideoGame Type", "ｹﾞｰﾑ ｷｼｭ" },            // 1
-  { "R KEY Mapping", "Rﾎﾞﾀﾝﾏｯﾋﾟﾝｸﾞ" },         // 2
-  { "DATE Setting", "ﾋﾂﾞｹ ｾｯﾃｲ" },             // 3
-  { "Language", "Language" },                  // 4
-  { "MENU         >LR", "ﾒﾆｭｰ         >LR" },  // 5
+  { "Configuration", "ｼｽﾃﾑｾｯﾃｲ" },      // 0
+  { "VideoGame Type", "ｹﾞｰﾑ ｷｼｭ" },     // 1
+  { "R KEY Mapping", "Rﾎﾞﾀﾝﾏｯﾋﾟﾝｸﾞ" },  // 2
+  { "DATE Setting", "ﾋﾂﾞｹ ｾｯﾃｲ" },      // 3
+  { "LANGUAGE", "LANGUAGE" },           // 4
 };
 // 自動旋律  6（8文字）
 const char *strings_Me[][2] = {
@@ -228,25 +226,25 @@ void displayString(char index, char set) {
   const char *str = nullptr;
   switch (set) {
     case 0:
-      str = (languageFlag == 0) ? strings_I[(char)index][0] : jp(strings_I[(char)index][1]);
+      str = (languageFlag == 0) ? strings_I[(int)index][0] : jp(strings_I[(int)index][1]);
       break;
     case 1:
-      str = (languageFlag == 0) ? strings_Q[(char)index][0] : jp(strings_Q[(char)index][1]);
+      str = (languageFlag == 0) ? strings_Q[(int)index][0] : jp(strings_Q[(int)index][1]);
       break;
     case 2:
-      str = (languageFlag == 0) ? strings_M[(char)index][0] : jp(strings_M[(char)index][1]);
+      str = (languageFlag == 0) ? strings_M[(int)index][0] : jp(strings_M[(int)index][1]);
       break;
     case 3:
-      str = (languageFlag == 0) ? strings_A[(char)index][0] : jp(strings_A[(char)index][1]);
+      str = (languageFlag == 0) ? strings_A[(int)index][0] : jp(strings_A[(int)index][1]);
       break;
     case 4:
-      str = (languageFlag == 0) ? strings_F[(char)index][0] : jp(strings_F[(char)index][1]);
+      str = (languageFlag == 0) ? strings_F[(int)index][0] : jp(strings_F[(int)index][1]);
       break;
     case 5:
-      str = (languageFlag == 0) ? strings_S[(char)index][0] : jp(strings_S[(char)index][1]);
+      str = (languageFlag == 0) ? strings_S[(int)index][0] : jp(strings_S[(int)index][1]);
       break;
     case 6:
-      str = (languageFlag == 0) ? strings_Me[(char)index][0] : jp(strings_Me[(char)index][1]);
+      str = (languageFlag == 0) ? strings_Me[(int)index][0] : jp(strings_Me[(int)index][1]);
       break;
   }
   if (str != nullptr) lcd.print(str);
@@ -288,27 +286,12 @@ void setup() {
     monthDate = savedMonthDate;
     yearDate = savedYearDate;
   }
-
-  switch (consoleType) {
-    case 0:
-      confirmButton = Button::A;
-      cancelButton = Button::B;
-      break;
-    case 1:
-      confirmButton = Button::B;
-      cancelButton = Button::A;
-      break;
-  }
-  switch (mappingR) {
-    case 0:
-      mappingR1 = Button::R;
-      mappingR2 = Button::ZR;
-      break;
-    case 1:
-      mappingR1 = Button::ZR;
-      mappingR2 = Button::R;
-      break;
-  }
+  /* 決定ボタン */
+  confirmButton = (consoleType == 0) ? Button::A : Button::B;
+  cancelButton = (consoleType == 0) ? Button::B : Button::A;
+  /* Rボタン入れ替え */
+  mappingR1 = (mappingR == 0) ? Button::R : Button::ZR;
+  mappingR2 = (mappingR == 0) ? Button::ZR : Button::R;
 
   lcd.begin(16, 2);
   lcd.setCursor(0, 0);
@@ -322,17 +305,10 @@ void setup() {
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("RISE:SUNBREAK_");
-  switch (consoleType) {
-    case 0:
-      lcd.print("NS");
-      break;
-    case 1:
-      lcd.print("PS");
-      break;
-  }
+  lcd.print(consoleType == 0 ? "NS" : "PS");
+
   lcd.setCursor(0, 1);
-  lcd.print("v3.6");
-  displayString(mode, 0);
+  lcd.print("v3.8");
   startTime = millis();
 }
 
@@ -344,17 +320,15 @@ void loop() {
 
   // DOWN - UPでモード切り替え
   if (!dateSet && (modeNow == btnDOWN || modeNow == btnUP) && modeOld == btnNONE) {
-    // ゲーム機種によるモード制限
-    if (!memory && modeNow == btnUP) {
-      mode++;
-      if (consoleType == 0 && mode > 4) mode = 0;
-      else if (consoleType == 1 && mode > 3) mode = 0;
-      delay(250);
-    }
-    if (!memory && modeNow == btnDOWN) {
-      mode--;
-      if (consoleType == 0 && mode < 0) mode = 4;
-      else if (consoleType == 1 && mode < 0) mode = 3;
+    if (!memory) {
+      if (modeNow == btnUP) mode++;
+      else if (modeNow == btnDOWN) mode--;
+
+      // ゲーム機種によるモード制限
+      if (consoleType == 0) mode = (mode > 4) ? 0 : (mode < 0) ? 4
+                                                               : mode;
+      else if (consoleType == 1) mode = (mode > 3) ? 0 : (mode < 0) ? 3
+                                                                    : mode;
       delay(250);
     }
 
@@ -362,53 +336,67 @@ void loop() {
     value = 0;
     dateSet = false;
     initialLcd = true;
+    if (mode != 3) prg = 0;  // 闘技場オートクエスト準備初期化
+
+    // 2列目LCD表示
     lcd.clear();
     lcd.setCursor(0, 1);
     lcd.print("M");
     lcd.print(mode);
     lcd.print(".");
+    displayString(mode, 0);  // マクロモード項目
   }
   modeOld = modeNow;
-  // モードによって異なる動作を行う
+
+  /* マクロ項目*/
   switch (mode) {
     // モード0の動作
     case 0:
-      mode0();
       if (!initialLcd) {
         lcd.setCursor(4, 1);
-        displayString(mode, 0);  // MODE>
+        if (languageFlag == 0) lcd.print(" MODE>UP-DWN");
+        else if (languageFlag == 1) lcd.print(jp(" ﾓｰﾄﾞ>ｳｴorｼﾀ"));
       } else if (value == 0) {
+        lcdSelection();
         lcd.setCursor(3, 1);
         displayString(mode, 5);  // configuration
       }
+      mode0();
       break;
     // モード1の動作
     case 1:
-      lcd.setCursor(3, 1);
-      displayString(mode, 0);  // Qurious
+      if (value == 0) lcdSelection();
       mode1();
       break;
     // モード2の動作
     case 2:
-      lcd.setCursor(3, 1);
-      displayString(mode, 0);  // Melding
+      if (value == 0) {
+        lcdSelection();
+        prg = 0;
+      }
       mode2();
       break;
     // モード3の動作
     case 3:
-      if (value == 0) {  // 2列目制御
-        lcd.setCursor(3, 1);
-        displayString(mode, 0);  // Auto Play
-      }
+      if (value == 0) lcdSelection();
       mode3();
       break;
     // モード4の動作
     case 4:
-      if (value == 0) {  // 2列目制御
-        lcd.setCursor(3, 1);
-        displayString(mode, 0);  // amiibo
+      if (value == 0) {
+        lcdSelection();
+        lcd.setCursor(9, 1);
+        lcd.print("  ");
+        prg = 0;
       }
       mode4();
       break;
   }
+}
+
+void lcdSelection() {
+  lcd.setCursor(0, 0);
+  displayString(value, mode);
+  lcd.setCursor(13, 0);
+  lcd.print(">LR");
 }
