@@ -59,13 +59,14 @@ unsigned char modeOld;
 // 各種初期値
 bool initialLcd = false;
 bool joinExecuted = false;
-bool isFirstRun = false;
+bool isFirstRun = true;
 bool firstRun = true;
 bool melding = false;
 bool QuriousRun;
 
 // マカ錬金
 int meldingStop = 0;
+int LotteryStop = 0;
 int lap = 0;
 char line_1 = 1;
 char page_1 = 1;
@@ -83,7 +84,6 @@ unsigned long startTimeB = 0;
 unsigned long startTimeS = 0;
 unsigned long stopTime;
 unsigned int repeatCount;
-unsigned int repeatCountMelding;
 unsigned char prg = 0;
 bool reStart;
 bool skipExec = false;
@@ -102,8 +102,8 @@ bool steyMode4;
 bool targetOn;
 bool dateSet = false;
 bool memory = false;
-bool runStop = true;
 bool closeLottery = false;
+bool runStop = true;
 bool timesLeft;
 
 // カウンター制御
@@ -126,7 +126,7 @@ unsigned char yearDate = 24;
 unsigned char savedDayDate;
 unsigned char savedMonthDate;
 unsigned char savedYearDate;
-unsigned char cursorPosition = 1;  // カーソル位置
+unsigned char curPos = 1;  // カーソル位置
 
 /* ============================================================== */
 /* 決定Aボタンと×ボタンの決定・キャンセルのキーマッピング */
@@ -136,8 +136,8 @@ unsigned char confirmButton;
 unsigned char cancelButton;
 
 /* R(R1)ボタンとZR(R2)ボタンを入れ替えたマッピングの場合 =============== */
-// オプション / CONTROLS  /  L(L1)とR(R1)の入れ替え  →  R(R1)とZR(R2)のみ
-// ユーザー環境に合わせて数値変更  デフォルトは"1"  入れ替えた場合は"2"
+// ゲームオプション / CONTROLS / L(L1)とR(R1)の入れ替え  →  R(R1)とZR(R2)のみ
+// ユーザー環境に合わせて数値変更  デフォルトは"0"  入れ替えた場合は"1"
 bool mappingR = 1;  // Rボタンのキーマッピングの有無
 unsigned char mappingR1;
 unsigned char mappingR2;
@@ -163,62 +163,48 @@ char *jp(const char *text) {
 
 /* language ===================================================== */
 bool languageFlag = 1;  // 言語のフラグ (0: 英語, 1: 日本語)
-// モード  0
-const char *strings_I[][2] = {
-  { "MENU", "ﾒﾆｭｰ" },        // 0
-  { "Qurious", "ｶｲｲﾚﾝｾｲ" },  // 1
-  { "Melding", "ﾏｶﾚﾝｷﾝ" },   // 2
-  { "AutoPlay", "ｼﾞﾄﾞｳ" },   // 3
-  { "amiibo", "ｱﾐｰﾎﾞ" },     // 4
-};
-// 傀異錬成  1（9文字）
-const char *strings_Q[][2] = {
-  { "SelectEssence", "ｼﾖｳｺﾊｸｦｾﾝﾀｸ" },  // 0
-  { "Amber", "ｾｲｷ" },                  // 1
-  { "Plus", "ｼﾞｮｳ" },                  // 2
-  { "Prime", "ｾﾝ" },                   // 3
-  { "Royal", "ｵｳ" },                   // 4
-  { "Pure", "ｼﾝ" },                    // 5
-  { "RepeatRec", "ﾚﾝｾｲｷﾛｸ" },          // 6
-  { "RepeatQUR", "ﾚﾝｾｲｸﾘｶｴｼ" },        // 7
-  { "CountSet", "ｶｲｽｳｾｯﾃｲ" },          // 8
-};
-// マカ錬金  2（11文字）
-const char *strings_M[][2] = {
-  { "SelectMelding", "ﾚﾝｷﾝｦｾﾝﾀｸ" },  // 0
-  { "MulTask", "ﾊｷﾏﾙﾁｾｯﾃｲ" },        // 1
-  { "Vigor", "ﾊｷ" },                 // 2
-  { "Cyclus", "ｴﾝｶﾝ" },              // 3
-  { "Sell EQPT ", "ﾊﾞｲｷｬｸ" },        // 4
-};
-// 自動プレイ  3（13文字）
-const char *strings_A[][2] = {
-  { "SelectAutoTyp", "ｼﾞﾄﾞｳｺｳﾓｸｾﾝﾀｸ" },  // 0
-  { "Arena", "ﾄｳｷﾞｼﾞｮｳ" },               // 1
-  { "Infernal", "ｺﾞｸｾﾝｷｮｳ" },            // 2
-  { "Forlorn", "ﾄｳﾉﾋｷｮｳ" },              // 3
-  { "ArenaAuto   ", "ﾄｳｷﾞｼﾞｮｳｵｰﾄ " },    // 4
-  { "ItemGath", "ﾄｸｻﾝﾋﾝ" },              // 5
-};
-// amiibo福引  4
-const char *strings_F[][2] = {
-  { "SelectLottery", "ﾌｸﾋﾞｷｺｳﾓｸｾﾝﾀｸ" },  // 0
-  { "Lottery", "ﾌｸﾋﾞｷ  " },              // 1
-  { "Setting", "ｾｯﾃｲ   " },              // 2
-};
-// 設定  5
+// value, mode 0  / 設定
 const char *strings_S[][2] = {
-  { "Configuration", "ｼｽﾃﾑｾｯﾃｲ" },      // 0
-  { "VideoGame Type", "ｹﾞｰﾑ ｷｼｭ" },     // 1
-  { "R KEY Mapping", "Rﾎﾞﾀﾝﾏｯﾋﾟﾝｸﾞ" },  // 2
-  { "DATE Setting", "ﾋﾂﾞｹ ｾｯﾃｲ" },      // 3
-  { "LANGUAGE", "LANGUAGE" },           // 4
+  { "CONFIGURATION", "ｼｽﾃﾑｾｯﾃｲ" },         // 0
+  { "VideoGame Type", "ｹﾞｰﾑ ｷｼｭ" },        // 1
+  { "R-BTN Mapping", "Rﾎﾞﾀﾝﾏｯﾋﾟﾝｸﾞ" },     // 2
+  { "DATE Setting", "ﾋﾂﾞｹ ｾｯﾃｲ" },         // 3
+  { "SystemLANGUAGE", "SystemLANGUAGE" },  // 4
 };
-// 自動旋律  6（8文字）
-const char *strings_Me[][2] = {
-  { "MelodyX ", "ｾﾝﾘﾂ X  " },  // 0
-  { "MelodyA ", "ｾﾝﾘﾂ A  " },  // 1
-  { "MelodyXA", "ｾﾝﾘﾂ XA " },  // 2
+// value, mode 1  / 傀異錬成
+const char *strings_Q[][2] = {
+  { "Qurious", "ｶｲｲﾚﾝｾｲ" },      // 0
+  { "Amber", "ｾｲｷ" },            // 1
+  { "Plus", "ｼﾞｮｳ" },            // 2
+  { "Prime", "ｾﾝ" },             // 3
+  { "Royal", "ｵｳ" },             // 4
+  { "Pure", "ｼﾝ" },              // 5
+  { "RepeatRec", "ﾚﾝｾｲｷﾛｸ" },    // 6
+  { "RepeatQUR", "ﾚﾝｾｲｸﾘｶｴｼ" },  // 7
+  { "CountSet", "ｶｲｽｳｾｯﾃｲ" },    // 8
+};
+// value, mode 2  / マカ錬金
+const char *strings_M[][2] = {
+  { "Melding", "ﾏｶﾚﾝｷﾝ" },     // 0
+  { "MulTask", "ﾊｷﾏﾙﾁｾｯﾃｲ" },  // 1
+  { "Vigor", "ﾊｷ" },           // 2
+  { "Cyclus", "ｴﾝｶﾝ" },        // 3
+  { "Sell EQPT ", "ﾊﾞｲｷｬｸ" },  // 4
+};
+// value, mode 3  / 自動プレイ
+const char *strings_A[][2] = {
+  { "AutoPlay", "ｵｰﾄﾌﾟﾚｲ" },           // 0
+  { "Arena", "ﾄｳｷﾞｼﾞｮｳ" },             // 1
+  { "Infernal", "ｺﾞｸｾﾝｷｮｳ" },          // 2
+  { "Forlorn", "ﾄｳﾉﾋｷｮｳ" },            // 3
+  { "ArenaAuto   ", "ﾄｳｷﾞｼﾞｮｳｵｰﾄ " },  // 4
+  { "ItemGath", "ﾄｸｻﾝﾋﾝ" },            // 5
+};
+// value, mode 4  / amiibo福引
+const char *strings_F[][2] = {
+  { "amiibo", "ｱﾐｰﾎﾞ" },     // 0
+  { "Lottery", "ﾌｸﾋﾞｷ  " },  // 1
+  { "Config", "ｾｯﾃｲ   " },   // 2
 };
 
 // 選択した言語に応じて文字列を表示する関数
@@ -226,7 +212,7 @@ void displayString(char index, char set) {
   const char *str = nullptr;
   switch (set) {
     case 0:
-      str = (languageFlag == 0) ? strings_I[(int)index][0] : jp(strings_I[(int)index][1]);
+      str = (languageFlag == 0) ? strings_S[(int)index][0] : jp(strings_S[(int)index][1]);
       break;
     case 1:
       str = (languageFlag == 0) ? strings_Q[(int)index][0] : jp(strings_Q[(int)index][1]);
@@ -239,12 +225,6 @@ void displayString(char index, char set) {
       break;
     case 4:
       str = (languageFlag == 0) ? strings_F[(int)index][0] : jp(strings_F[(int)index][1]);
-      break;
-    case 5:
-      str = (languageFlag == 0) ? strings_S[(int)index][0] : jp(strings_S[(int)index][1]);
-      break;
-    case 6:
-      str = (languageFlag == 0) ? strings_Me[(int)index][0] : jp(strings_Me[(int)index][1]);
       break;
   }
   if (str != nullptr) lcd.print(str);
@@ -307,9 +287,89 @@ void setup() {
   lcd.print("RISE:SUNBREAK_");
   lcd.print(consoleType == 0 ? "NS" : "PS");
 
-  lcd.setCursor(0, 1);
-  lcd.print("v3.8");
   startTime = millis();
+}
+
+/* ============================================================== */
+void lcdSelect() {
+  const char *strings[][2] = {
+    { "MENU", "ﾒﾆｭｰ" },
+    { "SelectEssence", "ｺﾊｸｦ ｾﾝﾀｸ" },
+    { "SelectMelding", "ﾚﾝｷﾝｦ ｾﾝﾀｸ" },
+    { "SelectAutoTyp", "ｵｰﾄｺｳﾓｸｦ ｾﾝﾀｸ" },
+    { "SelectLottery", "ﾌｸﾋﾞｷｦ ｾﾝﾀｸ" },
+  };
+  lcd.setCursor(0, 0);
+  lcd.print((languageFlag == 0) ? strings[mode][0] : jp(strings[mode][1]));
+
+  lcd.setCursor(13, 0);
+  lcd.print(">LR");
+}
+
+/* ============================================================== */
+/*　各モードのデータ設定時のカーソル表示位置*/
+void cursorPosition() {
+  switch (mode) {
+    case 0:
+      if (curPos == 1) lcd.setCursor(6, 1);        // 年の位置
+      else if (curPos == 2) lcd.setCursor(9, 1);   // 月の位置
+      else if (curPos == 3) lcd.setCursor(12, 1);  // 日の位置
+      break;
+    case 1:
+      if (curPos == 1) lcd.setCursor(12, 1);       // 1000の位
+      else if (curPos == 2) lcd.setCursor(13, 1);  // 100の位
+      else if (curPos == 3) lcd.setCursor(14, 1);  // 10の位
+      else if (curPos == 4) lcd.setCursor(15, 1);  // 1の位
+      break;
+    case 2:
+      if (curPos == 1) lcd.setCursor(11, 1);       //
+      else if (curPos == 2) lcd.setCursor(12, 1);  //
+      else if (curPos == 3) lcd.setCursor(14, 1);  //
+      else if (curPos == 4) lcd.setCursor(15, 1);  //
+      else if (curPos == 5) lcd.setCursor(14, 0);  //
+      else if (curPos == 6) lcd.setCursor(15, 0);  //
+      break;
+    case 4:
+      if (curPos == 1) lcd.setCursor(9, 0);        // 年の位置
+      else if (curPos == 2) lcd.setCursor(12, 0);  // 月の位置
+      else if (curPos == 3) lcd.setCursor(15, 0);  // 日の位置
+      else if (curPos == 4) lcd.setCursor(12, 1);  // 1000の位
+      else if (curPos == 5) lcd.setCursor(13, 1);  // 100の位
+      else if (curPos == 6) lcd.setCursor(14, 1);  // 10の位
+      else if (curPos == 7) lcd.setCursor(15, 1);  // 1の位
+      break;
+  }
+  if (dateSet) lcd.cursor();  // カーソル常時表示
+}
+
+/* ============================================================== */
+/* 1列目LCD */
+void commonLcdRow1() {
+  lcd.setCursor(0, 0);
+  lcd.print(value);
+  lcd.print(".");
+  displayString(value, mode);
+}
+/* 2列目LCD */
+void commonLcdRow2() {
+  lcd.setCursor(0, 1);
+  lcd.print("M");
+  lcd.print(mode);
+  lcd.print(".");
+  displayString(0, mode);
+}
+
+/* LCD日付データ表示 */
+void showLcdDate() {
+  if (languageFlag == 0) {
+    char text[10];
+    sprintf(text, "%02d/%02d/%02d", monthDate, dayDate, yearDate);  // "MM/DD/YY"
+    lcd.print(text);
+  } else if (languageFlag == 1) {
+    char text[10];
+    sprintf(text, "%02d/%02d/%02d", yearDate, monthDate, dayDate);  // "YY/MM/DD"
+    lcd.print(text);
+  }
 }
 
 
@@ -319,7 +379,7 @@ void loop() {
   modeNow = read_LCD_buttons(analogRead(0));
 
   // DOWN - UPでモード切り替え
-  if (!dateSet && (modeNow == btnDOWN || modeNow == btnUP) && modeOld == btnNONE) {
+  if (!dateSet && (modeNow == btnDOWN || modeNow == btnUP) && modeOld == btnNONE && value != -1) {
     if (!memory) {
       if (modeNow == btnUP) mode++;
       else if (modeNow == btnDOWN) mode--;
@@ -329,6 +389,7 @@ void loop() {
                                                                : mode;
       else if (consoleType == 1) mode = (mode > 3) ? 0 : (mode < 0) ? 3
                                                                     : mode;
+      prg = 0;
       delay(250);
     }
 
@@ -344,7 +405,7 @@ void loop() {
     lcd.print("M");
     lcd.print(mode);
     lcd.print(".");
-    displayString(mode, 0);  // マクロモード項目
+    displayString(0, mode);  // マクロモード項目
   }
   modeOld = modeNow;
 
@@ -353,11 +414,12 @@ void loop() {
     // モード0の動作
     case 0:
       if (!initialLcd) {
-        lcd.setCursor(4, 1);
+        lcd.setCursor(0, 1);
+        lcd.print("v3.8");
         if (languageFlag == 0) lcd.print(" MODE>UP-DWN");
         else if (languageFlag == 1) lcd.print(jp(" ﾓｰﾄﾞ>ｳｴorｼﾀ"));
       } else if (value == 0) {
-        lcdSelection();
+        lcdSelect();
         lcd.setCursor(3, 1);
         displayString(mode, 5);  // configuration
       }
@@ -365,38 +427,23 @@ void loop() {
       break;
     // モード1の動作
     case 1:
-      if (value == 0) lcdSelection();
+      if (value == 0) lcdSelect();
       mode1();
       break;
     // モード2の動作
     case 2:
-      if (value == 0) {
-        lcdSelection();
-        prg = 0;
-      }
+      if (value == 0) lcdSelect();
       mode2();
       break;
     // モード3の動作
     case 3:
-      if (value == 0) lcdSelection();
+      if (value == 0) lcdSelect();
       mode3();
       break;
     // モード4の動作
     case 4:
-      if (value == 0) {
-        lcdSelection();
-        lcd.setCursor(9, 1);
-        lcd.print("  ");
-        prg = 0;
-      }
+      if (value == 0) lcdSelect();
       mode4();
       break;
   }
-}
-
-void lcdSelection() {
-  lcd.setCursor(0, 0);
-  displayString(value, mode);
-  lcd.setCursor(13, 0);
-  lcd.print(">LR");
 }

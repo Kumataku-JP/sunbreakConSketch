@@ -101,11 +101,11 @@ void meldingCyclus() {
 }
 /*  護石受取り画面での処理  */
 void repeatMelding() {
-  if (repeatCountMelding > 0) {
+  if (repeatCount > 0) {
     pushHat(Hat::UP);           //
     pushButton(confirmButton);  // 全て受け取る
     melding = true;
-  } else if (melding && repeatCountMelding == 0) {
+  } else if (melding && repeatCount == 0) {
     melding = false;
     steyMode2 = false;
   } else {

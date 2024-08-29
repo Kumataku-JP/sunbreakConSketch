@@ -54,48 +54,73 @@ void dateSetting() {
 void oneDay() {
   settingScreen();
   if (prg == 4) {
-    pushButton(Button::A, 60, 50, 2);
-    pushHat(Hat::UP, 50, 80);  //日更新
-
-    pushButton(Button::A, 60, 50, 4);  //OKまで移動 OK
+    switch (languageFlag) {
+      case 0:                              // mm-dd-yyyy-hh-mm-AM/PM-confirm
+        pushHat(Hat::RIGHT, 40, 20);       // 日に移動
+        pushHat(Hat::UP, 40, 20);          // 日更新
+        pushButton(Button::A, 60, 40, 6);  // OKまで移動 OK
+        break;
+      case 1:                              // yyyy-mm-dd-hh-mm-confirm
+        pushHat(Hat::RIGHT, 40, 20, 2);    // 日に移動
+        pushHat(Hat::UP, 40, 20);          // 日更新
+        pushButton(Button::A, 60, 40, 4);  //O Kまで移動 OK
+        break;
+    }
     delay(100);
     dayDate++;
     prg++;
   }
 }
-
 /* 月日更新関数 */
 void oneMonth() {
   settingScreen();
   if (prg == 4) {
-    pushButton(Button::A, 60, 50, 2);
-    pushHat(Hat::UP, 50, 80);  //日更新
-
-    pushHat(Hat::LEFT, 50, 50);
-    pushHat(Hat::UP, 50, 80);  //月更新
-
-    pushButton(Button::A, 60, 50, 5);  //OKまで移動 OK
-    delay(100);
+    switch (languageFlag) {
+      case 0:                              // mm-dd-yyyy-hh-mm-AM/PM-confirm
+        pushHat(Hat::UP, 40, 20);          // 月更新
+        pushHat(Hat::RIGHT, 40, 20);       // 日に移動
+        pushHat(Hat::UP, 40, 20);          // 日更新
+        pushButton(Button::A, 60, 40, 6);  // OKまで移動 OK
+        delay(100);
+        break;
+      case 1:                              // yyyy-mm-dd-hh-mm-confirm
+        pushHat(Hat::RIGHT, 40, 20, 2);    // 日に移動
+        pushHat(Hat::UP, 40, 20);          // 日更新
+        pushHat(Hat::LEFT, 40, 20);        // 月に移動
+        pushHat(Hat::UP, 40, 20);          // 月更新
+        pushButton(Button::A, 60, 40, 5);  // OKまで移動 OK
+        delay(100);
+        break;
+    }
     monthDate++;
     dayDate = 1;
     prg++;
   }
 }
-
 /* 年月日更新関数 */
 void oneYear() {
   settingScreen();
   if (prg == 4) {
-    pushHat(Hat::UP, 50, 80);  //年更新
-
-    pushButton(Button::A, 60, 50, 2);
-    pushHat(Hat::UP, 50, 80);  //日更新
-
-    pushHat(Hat::LEFT, 50, 80);
-    pushHat(Hat::UP, 50, 80);  //月更新
-
-    pushButton(Button::A, 60, 50, 5);  //OKまで移動 OK
-    delay(100);
+    switch (languageFlag) {
+      case 0:                              // mm-dd-yyyy-hh-mm-AM/PM-confirm
+        pushHat(Hat::UP, 40, 20);          // 月更新
+        pushHat(Hat::RIGHT, 40, 20);       // 日に移動
+        pushHat(Hat::UP, 40, 20);          // 日更新
+        pushHat(Hat::RIGHT, 40, 20);       // 年に移動
+        pushHat(Hat::UP, 40, 20);          // 年更新
+        pushButton(Button::A, 60, 40, 5);  // OKまで移動 OK
+        delay(100);
+        break;
+      case 1:                              // yyyy-mm-dd-hh-mm-confirm
+        pushHat(Hat::UP, 40, 20);          // 年更新
+        pushHat(Hat::RIGHT, 40, 20);       // 月に移動
+        pushHat(Hat::UP, 40, 20);          // 月更新
+        pushHat(Hat::RIGHT, 40, 20);       // 日に移動
+        pushHat(Hat::UP, 40, 20);          // 日更新
+        pushButton(Button::A, 60, 40, 4);  // OKまで移動 OK
+        delay(100);
+        break;
+    }
     yearDate++;
     monthDate = 1;
     dayDate = 1;
@@ -117,18 +142,18 @@ void settingScreen() {
     prg++;
   } else if (prg == 1) {
     // 設定画面本体まで
-    pushHat(Hat::DOWN, 1680);  // down
+    pushHat(Hat::DOWN, 1680, 0);  // down
     prg++;
   } else if (prg == 2) {
     // 日付と変更まで
-    pushButton(Button::A, 100, 100);
+    pushButton(Button::A, 100, 150);
     pushHat(Hat::DOWN, 700, 50);  // down
     pushButton(Button::A, 40, 200);
     prg++;
   } else if (prg == 3) {
     //インターネットで時間を合わせるオンオフ(時刻を現在時間にリセット)
     if (firstRun) {
-      pushButton(Button::A, 50, 200);
+      pushButton(Button::A, 100, 250);
       pushHat(Hat::DOWN, 50, 100, 2);
       firstRun = false;  // 日付自動オン無効
     } else {
@@ -148,12 +173,15 @@ void lottery() {
     // amiiboを読み込む
     pushButton(Button::A, 40, 100, 3);  // 前日の景品受取り処理
     pushButton(Button::A, 2000);        // amiibo読み込み中
+    prg++;
+  } else if (prg == 6) {
     pushButton(Button::A, 40, 200, 4);  // amiiboを読み込みました,amiibo福引,このamiiboで福引をおこないますか
     lcd.setCursor(7, 0);
     lcd.cursor();
     pushButton(Button::A, 40, 100, 4);  // スキップ
     pushHat(Hat::DOWN, 50, 50);         // 受取り
     pushButton(Button::A, 40, 50);      // 閉じる（景品受取りは日付変更後
+    prg++;
   }
 }
 /* ============================================================== */

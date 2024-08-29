@@ -16,12 +16,11 @@ void mode0() {
       else if (value < 1) value = 4;         // 4から1へトグル
       initialLcd = true;                     // 実行後にフラグをセット
       lcd.clear();                           // LCD初期化
-      lcdSetting();                          // LCD表示
+      lcdConfig();                           // LCD表示
       delay(250);
     }
-    keysOld = keys;  // 前回のキー状態を記録
 
-    if (keys == btnSELECT) {
+    if (keys == btnSELECT && keysOld == btnNONE) {
       lcd.setCursor(0, 1);
       bool configValue;
 
@@ -31,18 +30,15 @@ void mode0() {
           consoleType = configValue;
           lcd.print(configValue ? "PlayStation 5  " : "Nintendo Switch");
           break;
-
         case 2:  // Rボタンマッピング
           configValue = !mappingR;
           mappingR = configValue;
           if (consoleType == 0) lcd.print(configValue ? "Button R to ZR  " : "Button R Default");
           else lcd.print(configValue ? "Button R1 to R2 " : "ButtonR1 Default");
           break;
-
         case 3:  // 日付登録
           dateSet = !dateSet;
           break;
-
         case 4:  // 言語選択
           configValue = !languageFlag;
           languageFlag = configValue;
@@ -53,6 +49,7 @@ void mode0() {
       memory = true;
       delay(250);
     }
+    keysOld = keys;  // 前回のキー状態を記録
   }
 
   /* 日付設定 */
@@ -65,22 +62,27 @@ void mode0() {
       lcd.noCursor();
       lcd.setCursor(0, 1);
       lcd.print("DATE");
+      delay(200);
     }
 
     // 左右ボタンで年月日カーソル送りトグル
     if (keysOld == btnNONE) {
-      cursorPosition += (keys == btnLEFT) ? -1 : (keys == btnRIGHT) ? 1
-                                                                    : 0;
-      if (cursorPosition < 1) cursorPosition = 3;
-      else if (cursorPosition > 3) cursorPosition = 1;
+      curPos += (keys == btnLEFT) ? -1 : (keys == btnRIGHT) ? 1
+                                                            : 0;
+      if (curPos < 1) curPos = 3;
+      else if (curPos > 3) curPos = 1;
     }
     keysOld = keys;  // 前回のキー状態を記録
 
     // 上下ボタンが押された場合 選択されたカーソルの位置に応じて日付を増加させる
     if (keys == btnUP || keys == btnDOWN) {
+      lcd.setCursor(5, 1);
       setDate();  // 日付を増加させる
     }
-    lcdSetDate();  // 日付をLCDに表示する
+    lcd.setCursor(5, 1);
+    showLcdDate();  // 日付をLCDに表示する
+    lcd.print("     ");
+    cursorPosition();
     delay(200);
   }
 }
@@ -107,27 +109,12 @@ void settingMemory() {
 }
 
 
-/* 日付LCD表示制御 */
-void lcdSetDate() {
-  lcdDate();
-  lcd.print("     ");
-  updateCursorPosition();
-}
-
-void updateCursorPosition() {
-  if (cursorPosition == 1) lcd.setCursor(5, 1);        // 年の位置
-  else if (cursorPosition == 2) lcd.setCursor(8, 1);   // 月の位置
-  else if (cursorPosition == 3) lcd.setCursor(11, 1);  // 日の位置
-  if (dateSet) {
-    lcd.cursor();  // カーソル常時表示
-  }
-}
 /* 日付を設定する */
 void setDate() {
   int direction = (keys == btnUP) ? 1 : -1;  // btnUPなら+1、btnDOWNなら-1
-  if (cursorPosition == 1) {                 // 年
+  if (curPos == 1) {                         // 年
     yearDate = (yearDate + direction + 61) % 61;
-  } else if (cursorPosition == 2) {  // 月
+  } else if (curPos == 2) {  // 月
     monthDate = (monthDate + direction + 12) % 12;
     if (monthDate == 0) monthDate = 12;  // 月が0にならないように修正
     // 月を変更した後、日付がその月の日数を超えている場合に日付を修正
@@ -135,12 +122,13 @@ void setDate() {
     if (dayDate > daysInCurrentMonth) {
       dayDate = daysInCurrentMonth;
     }
-  } else if (cursorPosition == 3) {  // 日
+  } else if (curPos == 3) {  // 日
     dayDate += direction;
     int daysInCurrentMonth = daysInMonth(monthDate, yearDate);
     if (dayDate < 1) dayDate = daysInCurrentMonth;
     if (dayDate > daysInCurrentMonth) dayDate = 1;
   }
+  cursorPosition();
 }
 /* 月ごとの日数を返す関数 */
 int daysInMonth(byte month, byte year) {
@@ -158,30 +146,31 @@ int daysInMonth(byte month, byte year) {
 }
 
 /* LCD表示 */
-void lcdSetting() {
-  lcd.setCursor(0, 0);
-  lcd.print(value);
-  lcd.print(".");
-  lcd.setCursor(2, 0);
-  displayString(value, 5);
-  // 2列目LCD
-  lcd.setCursor(0, 1);
-  if (value == 1) {
-    if (consoleType == 0) lcd.print("Nintendo Switch");
-    else if (consoleType == 1) lcd.print("PlayStation 5");
-  }
-  if (value == 2) {
-    if (mappingR == 0 && consoleType == 0) lcd.print("Button R Default");       // R Button Default
-    else if (mappingR == 0 && consoleType == 1) lcd.print("ButtonR1 Default");  // R1 Button Default
-    else if (mappingR == 1 && consoleType == 0) lcd.print("Button R to ZR");    // R Button to RZ
-    else if (mappingR == 1 && consoleType == 1) lcd.print("ButtonR1 to R2");    // R1 Button to R2
-  }
-  if (value == 3) {
-    lcd.print("DATE");
-    lcdSetDate();
-  }
-  if (value == 4) {
-    if (languageFlag == 0) lcd.print("English");
-    else if (languageFlag == 1) lcd.print(jp("ﾆﾎﾝｺﾞ"));
+void lcdConfig() {
+
+  commonLcdRow1();  // 1列目LCD
+
+  lcd.setCursor(0, 1);  // 2列目LCD
+  switch (value) {
+    case 1:
+      lcd.print((consoleType == 0) ? "Nintendo Switch" : "PlayStation 5");
+      break;
+    case 2:
+      if (consoleType == 0) lcd.print((mappingR == 0) ? "Button R Default" : "Button R to ZR");
+      else lcd.print((mappingR == 0) ? "ButtonR1 Default" : "ButtonR1 to R2");
+      break;
+    case 3:
+      lcd.print("DATE");
+      lcd.setCursor(5, 1);
+      showLcdDate();  // 日付をLCDに表示する
+      lcd.print("     ");
+      cursorPosition();
+      break;
+    case 4:
+      lcd.print((languageFlag == 0) ? "English" : jp("ﾆﾎﾝｺﾞ"));
+      break;
+    default:
+      lcd.print("Unknown");  // 予期しない値に対するデフォルトの表示
+      break;
   }
 }

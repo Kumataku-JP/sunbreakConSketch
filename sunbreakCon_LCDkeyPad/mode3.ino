@@ -21,7 +21,7 @@ void mode3() {
   /*  オートプレイ  */
   //オート選択
   if (!steyMode3) {
-    if (!dateSet && (keys == btnRIGHT || keys == btnLEFT)) {
+    if ((keys == btnRIGHT || keys == btnLEFT) && keysOld == btnNONE && !dateSet) {
       value += (keys == btnRIGHT) ? 1 : -1;
       if (value > 5) value = 1;  // 1から5へトグル
       if (value < 1) value = 5;  // 5から1へトグル
@@ -50,7 +50,7 @@ void mode3() {
   keysOld = keys;
 
   if (value != 0 && steyMode3) {
-    if (!isFirstRun) {
+    if (isFirstRun) {
       // stopTimeが60秒経過しているかどうかをチェックしてから初期化
       if (!reStart || startTimeS == 0) {
         startTimeS = startTime = referenceTime = millis();
@@ -108,8 +108,8 @@ void mode3() {
         lcd.print(".");
         displayString(value, 3);
         lcd.print("          ");
-        lcd.setCursor(10, 1);
-        lcd.print(" SRT>S");
+        lcd.setCursor(11, 1);
+        lcd.print("SRT>S");
       }
     }
     if (!runStop) {
@@ -117,10 +117,10 @@ void mode3() {
       lcd.setCursor(value >= 1 && value <= 4 ? 10 : 9, 0);  // 決戦場と特産品の場合とのLCD位置の調整
       lcd.print("STOP");
       lcd.setCursor(10, 1);
-      lcd.print("ReST>S");
+      lcd.print("RSRT>S");
       dateSet = false;
-      isFirstRun = false;
       skipExec = false;
+      isFirstRun = true;
       runStop = true;
       times = 0;
       stopTime = millis();  // ストップ時にstopTimeを計測開始
@@ -143,17 +143,24 @@ void lcdCruise() {
   else if (prg == 4) lcd.print("Loading.");
   else if (prg == 5) lcd.print("Arena.. ");
 }
+
 /* 旋律LCD */
 void lcdMelody() {
+  const char* melodyStrings[][2] = {
+    { "MelodyX ", "ｾﾝﾘﾂ X  " },  // melody == 0
+    { "MelodyA ", "ｾﾝﾘﾂ A  " },  // melody == 1
+    { "MelodyXA", "ｾﾝﾘﾂ XA " },  // melody == 2
+  };
   lcd.setCursor(3, 1);
-  displayString(melody, 6);  //旋律タイプ
+  lcd.print((languageFlag == 0) ? melodyStrings[melody][0] : jp(melodyStrings[melody][1]));
 }
+
 /* 特産品LCD */
 void lcdItem() {
   lcd.setCursor(3, 1);
-  const char* text;
-  if (languageFlag == 0) text = targetOn ? "OnTheGo" : "RepeatA";
-  else if (languageFlag == 1) text = targetOn ? jp("ｲﾄﾞｳｻｲｼｭ") : jp("ﾘﾋﾟｰﾄA  ");
+  const char* text = (languageFlag == 0)
+                       ? (targetOn ? "OnTheGo" : "RepeatA")
+                       : (targetOn ? jp("ｲﾄﾞｳｻｲｼｭ") : jp("ﾘﾋﾟｰﾄA  "));
   lcd.print(text);
 }
 
@@ -181,17 +188,15 @@ void elapsedTime() {
 
 /* LCD表示 */
 void lcdAuto() {
-  lcd.setCursor(0, 1);
-  lcd.print("M");
-  lcd.print(mode);
-  lcd.print(".");
-  displayString(mode, 0);  // Auto
+  // 1列目LCD
   lcd.setCursor(0, 0);
   if (value >= 1 && value <= 4) {
     lcd.print(value);
     lcd.print(".");
   }
-  displayString(value, 3);
+  displayString(value, mode);
+  // 2列目LCD
+  commonLcdRow2();
   lcd.setCursor(11, 1);
   lcd.print("SRT>S");
 }

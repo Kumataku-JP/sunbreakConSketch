@@ -21,12 +21,16 @@ void mode4() {
 
   /* !dateSet 選択モード*/
   if (!dateSet) {
-    if ((keys == btnRIGHT || keys == btnLEFT) && !closeLottery) {
-      value += (keys == btnRIGHT) ? 1 : -1;  // 右を押したか正否判定
-      if (value > 2) value = 1;              // 1から2へトグル
-      else if (value < 1) value = 2;         // 2から1へトグル
-      lcd.clear();                           // LCD初期化
-      lcdAmiibo();                           // LCD表示
+    if ((keys == btnRIGHT || keys == btnLEFT) && keysOld == btnNONE && !dateSet) {
+      if (!closeLottery) {
+        value += (keys == btnRIGHT) ? 1 : -1;  // 右を押したか正否判定
+        if (value > 2) value = 1;              // 1から2へトグル
+        else if (value < 1) value = 2;         // 2から1へトグル
+      } else if (closeLottery && keys == btnLEFT) {
+        value = -1;  // closeLotteryがtrueの時に左ボタンを押した場合
+      }
+      lcd.clear();  // LCD初期化
+      lcdAmiibo();  // LCD表示
       delay(250);
     }
 
@@ -35,94 +39,101 @@ void mode4() {
     }
     keysOld = keys;
     /* amiibo福引 */
-    if (value == 1) {
-      if (steyMode4) {
-        if (!isFirstRun) {
-          repeatCount = numDate;
-          isFirstRun = true;
-          runStop = false;
-          lcd.setCursor(0, 0);
-          displayString(value, 4);  // LCD Fukubiki
-          lcd.setCursor(9, 1);
-          lcd.print(" STOP>S");
-        }
+    if (steyMode4) {
+      if (value == 1) {
+        /* LCD表示 */
+        LotteryStop = 1;
         lcd.setCursor(0, 0);
-        displayString(value, 4);
-        //福引回数指定
+        displayString(value, mode);
+        lcd.setCursor(8, 0);
+        showLcdDate();  // 日付をLCDに表示する
+        lcd.setCursor(3, 1);
+        lcdProgress();    // 処理進行状況
+        showLcdAmiibo();  // 開始時にLCDに表示するための処理
+
+        lottery();      // amiibo福引 prg = 5,6で実行なので前置き
+        dateSetting();  // 日付変更
+        lcd.setCursor(8, 0);
+        showLcdDate();  // 日付をLCDに表示する
+
+        /* 福引回数制限なしの場合 */
+        if (!timesLeft) {
+          lcd.setCursor(10, 1);
+          lcd.print(" STP>S");
+          if (prg == 7) prg = 0;  // ループ初期化
+        }
+        /* 福引回数指定した場合 */
         if (timesLeft) {
           if (repeatCount > 0) {
-            lcd.noCursor();
-            dateSetting();  //日付変更
-            lcd.setCursor(9, 1);
-            lcd.print("  ");
-            lcdCount(repeatCount);  // カウントLCD表示
-            lcd.setCursor(7, 0);
-            lcd.print(" ");
-            lcdDate();  // 日付LCD表示
-            lottery();  // amiibo福引
-            lcd.setCursor(9, 1);
-            lcd.print("  ");
-            if (prg == 5) {
-              lcdCount(repeatCount - 1);  // カウントLCD表示
-              closeLottery = true;        // 終了後日付自動オンに戻すフラグ
-              repeatCount--;              // カウントをデクリメント
-              prg = 0;
+            lcd.setCursor(11, 1);
+            lcd.print("t");
+            showLcdCountLottery(repeatCount);  // カウントをLCDに表示する
+            if (prg == 7) {
+              repeatCount--;  // カウントをデクリメント
+              prg = 0;        // ループ初期化
             }
           }
-          if (repeatCount == 0) steyMode4 = false;
-        } else if (!timesLeft) {
-          lcd.setCursor(9, 1);
-          lcd.print(" STOP>S");
-          dateSetting();  //日付変更
-          lcd.setCursor(8, 0);
-          lcdDate();  //日付表示
-          lottery();  //amiibo福引
-          if (prg == 5) {
-            closeLottery = true;
-            prg = 0;
+          if (repeatCount == 0) {
+            LotteryStop = 2;
+            repeatCount = numDate;
+            steyMode4 = false;
           }
         }
-        // delay(200);
-      }
-      if (!steyMode4) {
-        if (!runStop) {
-          lcd.setCursor(0, 0);
-          lcd.print("STOP   ");
-          lcd.setCursor(9, 1);
-          lcd.print("Close>L");
-          delay(250);
-        }
-      }
-      /* カレンダーリセット Switch本体の日付設定を自動に戻す*/
-      if (keys == btnLEFT && closeLottery) {
-        runStop = true;
-        if (runStop) {
-          lcd.setCursor(0, 0);
-          lcd.print("CloseRun");
-          settingScreenClose();  // クローズ動作マクロ
-          dayDate = savedDayDate;
-          monthDate = savedMonthDate;
-          yearDate = savedYearDate;
-          isFirstRun = false;
-          closeLottery = false;
-          firstRun = true;
-          value = 1;
-          prg = 0;
-          delay(250);
-          lcd.setCursor(0, 0);
-          displayString(value, mode);  // Start Fukubiki>D
-          lcd.print(" ");
-          lcdAmiibo();
-          lcd.setCursor(9, 1);
-          lcd.print("  STR>S");
-        }
-      }
-      lcd.noCursor();
-    }  // value == 1ここまで
-    if (value == 2) {
-      if (steyMode4) {
+        lcd.noCursor();
+      }  // value == 1 ここまで
+      if (value == 2) {
         dateSet = true;
+      }
+
+      if (value == -1) {
+        lcd.setCursor(3, 1);
+        lcd.print("Closing...");
+        lcd.print("     ");
+        settingScreenClose();  // クローズ動作マクロ
+        // 初期化
+        dayDate = savedDayDate;
+        monthDate = savedMonthDate;
+        yearDate = savedYearDate;
+        steyMode4 = !steyMode4;
+        closeLottery = false;
+        isFirstRun = true;
+        firstRun = true;  // 日付自動オンオフ
+        value = 1;
+        prg = 0;
+        LotteryStop = 0;
+        lcd.clear();
+        lcdAmiibo();
+        lcd.setCursor(0, 0);
+        displayString(value, mode);  // Start Fukubiki>D
+        lcd.setCursor(10, 1);
+        lcd.print(" SRT>S");
         delay(250);
+      }
+    }  // steyMode4 ここまで
+
+    if (!steyMode4) {
+      switch (LotteryStop) {
+        case 0:
+          break;
+        case 1:  // 強制停止
+          lcd.setCursor(0, 0);
+          lcd.print("CLOSE>L");
+          lcd.setCursor(10, 1);
+          lcd.print("RSRT>S");
+          closeLottery = true;
+          prg = 0;
+          LotteryStop = 0;
+          break;
+        case 2:  // 指定数終了
+          lcd.setCursor(0, 0);
+          lcd.print("CLOSE>L");
+          lcd.setCursor(10, 1);
+          lcd.print("   END");
+          closeLottery = true;
+          prg = 0;
+          LotteryStop = 0;
+          break;
+          delay(250);
       }
     }
   }
@@ -131,6 +142,8 @@ void mode4() {
   if (dateSet) {
     lcd.setCursor(7, 0);
     lcd.print("S");
+    lcd.setCursor(11, 1);
+    lcd.print("C");
     /* カウンター設定 */
     if (keys == btnSELECT && keysOld == btnNONE && value != 0) {
       // 設定された日付を保存する
@@ -138,11 +151,9 @@ void mode4() {
       savedMonthDate = monthDate;
       savedYearDate = yearDate;
 
-      if (numDate > 0) {
-        timesLeft = true;
-      } else if (numDate == 0) {
-        timesLeft = false;
-      }
+      if (numDate > 0) timesLeft = true;
+      else if (numDate == 0) timesLeft = false;  // 福引回数を指定しているか否か
+      repeatCount = numDate;
 
       dateSet = false;
       steyMode4 = false;
@@ -153,107 +164,106 @@ void mode4() {
 
     /* データ設定 */
     // 日付登録
-    // 左右ボタンでカーソル送りトグル
-    if (keysOld == btnNONE) {
-      cursorPosition += (keys == btnLEFT) ? -1 : (keys == btnRIGHT) ? 1
-                                                                    : 0;
-      if (cursorPosition < 1) cursorPosition = 7;
-      else if (cursorPosition > 7) cursorPosition = 1;
+    if ((keys == btnLEFT || keys == btnRIGHT) && keysOld == btnNONE) {
+      curPos += (keys == btnLEFT) ? -1 : 1;
+      if (curPos < 1) curPos = 7;
+      else if (curPos > 7) curPos = 1;
     }
+    keysOld = keys;  // 前回のキー状態を記録
+
     if (keys == btnUP || keys == btnDOWN) {
       setDate();  // 日付を増加させる
       // amiibo福引回数指定
-      if (cursorPosition >= 4 && cursorPosition <= 7) {
-        int digitValueLottery = digitsL[cursorPosition - 4];
+      if (curPos >= 4 && curPos <= 7) {
+        int digitValueLottery = digitsL[curPos - 4];
         digitValueLottery = (keys == btnUP) ? (digitValueLottery + 1) % 10 : (digitValueLottery - 1 + 10) % 10;
-        digitsL[cursorPosition - 4] = digitValueLottery;
+        digitsL[curPos - 4] = digitValueLottery;
         lcdSetDateAmiibo();
       }
+      delay(100);
     }
-    keysOld = keys;      // 前回のキー状態を記録
     lcdSetDateAmiibo();  // LCDに表示する
-    delay(200);
+    delay(100);
   }
 }
 
+/* 進行中LCD */
+void lcdProgress() {
+  lcd.setCursor(3, 1);
+  if (prg == 0) lcd.print("HOME....");
+  else if (prg == 1) lcd.print("System..");
+  else if (prg == 2) lcd.print("Moving..");
+  else if (prg == 3) lcd.print("DATE....");
+  else if (prg == 4) lcd.print("Change..");
+  else if (prg == 5) lcd.print("Amiibo..");
+  else if (prg == 6) lcd.print("Lottery.");
+}
 
 /* 日付LCD表示制御 */
 void lcdSetDateAmiibo() {
-  lcdDate();
+  lcd.setCursor(8, 0);
+  showLcdDate();  // 日付をLCDに表示する
   lcd.setCursor(12, 1);
   updateCountLottery();
-  updateLotteryPosition();
+  cursorPosition();
 }
 
-// 各桁の数字をディスプレイに表示
+// のこりの周回数をディスプレイに表示
 void updateCountLottery() {
   numDate = digitsL[0] * 1000 + digitsL[1] * 100 + digitsL[2] * 10 + digitsL[3];
   for (int i = 0; i < 4; i++) {
-    lcd.print(digitsL[(int)i]);
-  }
-}
-/* カーソルポジション */
-void updateLotteryPosition() {
-  if (cursorPosition == 1) lcd.setCursor(9, 0);        // 年の位置
-  else if (cursorPosition == 2) lcd.setCursor(12, 0);  // 月の位置
-  else if (cursorPosition == 3) lcd.setCursor(15, 0);  // 日の位置
-  else if (cursorPosition == 4) lcd.setCursor(12, 1);  // 1000の位
-  else if (cursorPosition == 5) lcd.setCursor(13, 1);  // 100の位
-  else if (cursorPosition == 6) lcd.setCursor(14, 1);  // 10の位
-  else if (cursorPosition == 7) lcd.setCursor(15, 1);  // 1の位
-  if (dateSet) {
-    lcd.cursor();
+    lcd.print(digitsL[i]);
   }
 }
 
-/* LCD日付データ表示 */
-void lcdDate() {
-  char text[3];
-  sprintf(text, "%02d", yearDate);
-  lcd.print(text);
-  lcd.print("/");
-  sprintf(text, "%02d", monthDate);
-  lcd.print(text);
-  lcd.print("/");
-  sprintf(text, "%02d", dayDate);
-  lcd.print(text);
-}
 /* のこり福引回数LCD表示 */
-void lcdCount(int count) {
+void showLcdCountLottery(int count) {
   char text[5];
-  lcd.print("t");
-  sprintf(text, "%4d", count);
+  sprintf(text, "%04d", count);
   lcd.print(text);
 }
-
+void showLcdAmiibo() {
+  if (!timesLeft) {
+    lcd.setCursor(10, 1);
+    lcd.print(" STP>S");
+  }
+  /* 福引回数指定した場合 */
+  if (timesLeft) {
+    lcd.setCursor(11, 1);
+    lcd.print("t");
+    showLcdCountLottery(repeatCount);  // カウントをLCDに表示する
+  }
+}
 /* LCD表示 */
 void lcdAmiibo() {
+  // 1列目LCD
   lcd.setCursor(0, 0);
-  displayString(value, mode);  // Start Fukubiki>D
-  lcd.setCursor(0, 1);
-  lcd.print("M");
-  lcd.print(mode);
-  lcd.print(".");
-  displayString(mode, 0);  // Auto
+  displayString(value, mode);
+  // 2列目LCD
+  commonLcdRow2();
+  if (value == -1) {
+    lcd.setCursor(0, 0);
+    lcd.print("CLOSE>SELECT    ");
+    lcd.setCursor(3, 1);
+    lcd.print((languageFlag == 0) ? "SysDateRest  " : jp("ｼｽﾃﾑｶﾚﾝﾀﾞｼｮｷｶ"));
+  }
   if (value == 1) {
-    lcd.print(" ");
     if (timesLeft) {
-      lcd.setCursor(7, 0);
-      lcd.print("Times");
-      updateCountLottery();
+      lcd.setCursor(11, 0);
+      lcd.print("T");
+      updateCountLottery();  // カウンター表示更新
     } else {
       lcd.setCursor(8, 0);
-      lcdDate();
+      showLcdDate();  // 日付をLCDに表示する
     }
-    lcd.setCursor(9, 1);
-    lcd.print("  STR>S");
+    lcd.setCursor(10, 1);
+    lcd.print(" SRT>S");
   } else if (value == 2) {
-    lcd.setCursor(6, 0);
-    lcd.print(" ");
+    lcd.setCursor(7, 0);
     lcd.print("D");
-    lcdDate();
+    showLcdDate();  // 日付をLCDに表示する
     lcd.setCursor(11, 1);
-    lcd.print("C");
-    updateCountLottery();
+    lcd.print("T");
+    updateCountLottery();  // カウンター表示更新
   }
 }

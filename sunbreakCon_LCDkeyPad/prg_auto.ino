@@ -1,8 +1,8 @@
 /* 城塞高地特産品 固定採集 */
 void repeatA() {
   now = millis();
-  if (!isFirstRun) {
-    isFirstRun = true;
+  if (isFirstRun) {
+    isFirstRun = false;
     startTimeA = now;
   }
   // 2秒おきに実行
@@ -34,9 +34,9 @@ void repeatMove() {
 void autoArena() {
   leftStickTilt(5, 100);
   now = millis();
-  if (!isFirstRun) {
+  if (isFirstRun) {
     silkbind_4();  // 抜刀共鳴音珠・震打
-    isFirstRun = true;
+    isFirstRun = false;
     startTimeA = now;
   }
   silkbind_5();  // スライドビート・鉄蟲糸響打
@@ -50,9 +50,9 @@ void autoInfernal() {
   leftStickTilt(40, 100);
   now = millis();
   // 抜刀共鳴音珠・震打
-  if (!isFirstRun) {
+  if (isFirstRun) {
     silkbind_4();  // 抜刀共鳴音珠・震打
-    isFirstRun = true;
+    isFirstRun = false;
     startTimeA = now;
   }
   // 納刀A
@@ -79,9 +79,9 @@ void autoInfernal() {
 void autoForlorn() {
   leftStickTilt(25, 100);
   now = millis();
-  if (!isFirstRun) {
+  if (isFirstRun) {
     silkbind_4();  // 抜刀共鳴音珠・震打
-    isFirstRun = true;
+    isFirstRun = false;
     startTimeA = now;
   }
   // 納刀A
@@ -189,7 +189,7 @@ void autoArenaCruising() {
     prg++;
   } else if (prg == 4) {
     if (consoleType == 0) {
-      delay(22000);  //Switchロード時間
+      delay(21000);  //Switchロード時間
     } else if (consoleType == 1) {
       delay(10000);  //PS5ロード時間
     }

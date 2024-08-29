@@ -34,7 +34,7 @@ void mode1() {
         case 1:
           lcdQuriousRun();
           choiceCurrent();
-          choiceEssence();
+          choiceEssence();  // 精気琥珀
           countR++;
           lcdQuriousStart();
           break;
@@ -122,59 +122,52 @@ void mode1() {
     }
     // 錬成回数のセット  左右ボタンでカーソルを左に移動
     if (keysOld == btnNONE) {
-      cursorPosition += (keys == btnLEFT) ? -1 : (keys == btnRIGHT) ? 1
-                                                                    : 0;
-      if (cursorPosition < 1) cursorPosition = 4;
-      if (cursorPosition > 4) cursorPosition = 1;
+      curPos += (keys == btnLEFT) ? -1 : (keys == btnRIGHT) ? 1
+                                                            : 0;
+      if (curPos < 1) curPos = 4;
+      if (curPos > 4) curPos = 1;
     }
     keysOld = keys;  // 前回のキー状態を記録
 
     // カーソル位置が12-15のときに上下ボタンを押すと数字を増加
     if (keys == btnUP || keys == btnDOWN) {
-      if (cursorPosition >= 1 && cursorPosition <= 4) {
-        int index = cursorPosition - 1;
+      if (curPos >= 1 && curPos <= 4) {
+        int index = curPos - 1;
         int adjustment = (keys == btnUP) ? 1 : -1;
         digitsQ[index] = (digitsQ[index] + adjustment + 10) % 10;
         lcdSetQurious();
       }
+      delay(100);
     }
     lcdSetQurious();  // 錬成回数設定をLCDに表示する
-    delay(200);
+    delay(100);
   }  // dateSetここまで
 }  // mode1ここまで
 
 void lcdSetQurious() {
   lcd.setCursor(12, 1);
   updateCountQurious();
-  updateQuriousPosition();
+  cursorPosition();
 }
 
 // 各桁の数字をディスプレイに表示
 void updateCountQurious() {
-  numValue = digitsQ[0] * 1000 + digitsQ[1] * 100 + digitsQ[2] * 10 + digitsQ[3];
+  numValue = 0;
   for (int i = 0; i < 4; i++) {
-    lcd.print(digitsQ[(int)i]);
+    numValue = numValue * 10 + digitsQ[i];
+    lcd.print(digitsQ[i]);
   }
 }
-/* カーソルポジション */
-void updateQuriousPosition() {
-  if (cursorPosition == 1) lcd.setCursor(12, 1);       // 1000の位
-  else if (cursorPosition == 2) lcd.setCursor(13, 1);  // 100の位
-  else if (cursorPosition == 3) lcd.setCursor(14, 1);  // 10の位
-  else if (cursorPosition == 4) lcd.setCursor(15, 1);  // 1の位
-  if (dateSet) {
-    lcd.cursor();  // カーソル常時表示
-  }
-}
+
 
 /* LCD表示 */
 void lcdQurious() {
   char text[5];
-  lcd.setCursor(0, 0);
-  lcd.print(value);
-  lcd.print(".");
-  lcd.setCursor(2, 0);
-  displayString(value, mode);
+  // 1列目LCD
+  commonLcdRow1();
+  // 2列目LCD
+  commonLcdRow2();
+
   lcd.setCursor(11, 0);
   if (value >= 1 && value <= 5) {
     lcd.print("t");
@@ -197,11 +190,6 @@ void lcdQurious() {
       lcd.print(digitsQ[(int)i]);
     }
   }
-  lcd.setCursor(0, 1);
-  lcd.print("M");
-  lcd.print(mode);
-  lcd.print(".");
-  displayString(mode, 0);  // Qurious
 }
 
 void lcdQuriousRun() {
