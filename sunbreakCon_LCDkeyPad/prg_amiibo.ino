@@ -4,7 +4,7 @@
  *
 */
 
-void dateSetting() {
+void setupModeting() {
   /* 閏年 */
   switch (yearDate % 4) {
     case 0:  //閏年
@@ -26,8 +26,8 @@ void dateSetting() {
     case 7:
     case 8:
     case 10:
-      if (dayDate < day31) oneDay();
-      else if (dayDate == day31) oneMonth();
+      if (dayDate < lastDay) oneDay();
+      else if (dayDate == lastDay) oneMonth();
       break;
     //2月
     case 2:
@@ -39,13 +39,13 @@ void dateSetting() {
     case 6:
     case 9:
     case 11:
-      if (dayDate < day30) oneDay();
-      else if (dayDate == day30) oneMonth();
+      if (dayDate < lastDay - 1) oneDay();
+      else if (dayDate == lastDay - 1) oneMonth();
       break;
     //12月
     case 12:
-      if (dayDate < day31) oneDay();
-      else if (dayDate == day31) oneYear();
+      if (dayDate < lastDay) oneDay();
+      else if (dayDate == lastDay) oneYear();
       break;
   }
 }
@@ -56,12 +56,12 @@ void oneDay() {
   if (prg == 4) {
     switch (languageFlag) {
       case 0:                              // mm-dd-yyyy-hh-mm-AM/PM-confirm
-        pushHat(Hat::RIGHT, 40, 20);       // 日に移動
+        pushButton(Button::A);             // 日に移動
         pushHat(Hat::UP, 40, 20);          // 日更新
         pushButton(Button::A, 60, 40, 6);  // OKまで移動 OK
         break;
       case 1:                              // yyyy-mm-dd-hh-mm-confirm
-        pushHat(Hat::RIGHT, 40, 20, 2);    // 日に移動
+        pushButton(Button::A, 40, 40, 2);  // 日に移動
         pushHat(Hat::UP, 40, 20);          // 日更新
         pushButton(Button::A, 60, 40, 4);  //O Kまで移動 OK
         break;
@@ -78,13 +78,13 @@ void oneMonth() {
     switch (languageFlag) {
       case 0:                              // mm-dd-yyyy-hh-mm-AM/PM-confirm
         pushHat(Hat::UP, 40, 20);          // 月更新
-        pushHat(Hat::RIGHT, 40, 20);       // 日に移動
+        pushButton(Button::A);             // 日に移動
         pushHat(Hat::UP, 40, 20);          // 日更新
         pushButton(Button::A, 60, 40, 6);  // OKまで移動 OK
         delay(100);
         break;
       case 1:                              // yyyy-mm-dd-hh-mm-confirm
-        pushHat(Hat::RIGHT, 40, 20, 2);    // 日に移動
+        pushButton(Button::A, 40, 40, 2);  // 日に移動
         pushHat(Hat::UP, 40, 20);          // 日更新
         pushHat(Hat::LEFT, 40, 20);        // 月に移動
         pushHat(Hat::UP, 40, 20);          // 月更新
@@ -104,18 +104,18 @@ void oneYear() {
     switch (languageFlag) {
       case 0:                              // mm-dd-yyyy-hh-mm-AM/PM-confirm
         pushHat(Hat::UP, 40, 20);          // 月更新
-        pushHat(Hat::RIGHT, 40, 20);       // 日に移動
+        pushButton(Button::A);             // 日に移動
         pushHat(Hat::UP, 40, 20);          // 日更新
-        pushHat(Hat::RIGHT, 40, 20);       // 年に移動
+        pushButton(Button::A);             // 年に移動
         pushHat(Hat::UP, 40, 20);          // 年更新
         pushButton(Button::A, 60, 40, 5);  // OKまで移動 OK
         delay(100);
         break;
       case 1:                              // yyyy-mm-dd-hh-mm-confirm
         pushHat(Hat::UP, 40, 20);          // 年更新
-        pushHat(Hat::RIGHT, 40, 20);       // 月に移動
+        pushButton(Button::A);             // 月に移動
         pushHat(Hat::UP, 40, 20);          // 月更新
-        pushHat(Hat::RIGHT, 40, 20);       // 日に移動
+        pushButton(Button::A);             // 日に移動
         pushHat(Hat::UP, 40, 20);          // 日更新
         pushButton(Button::A, 60, 40, 4);  // OKまで移動 OK
         delay(100);

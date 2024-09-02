@@ -23,34 +23,31 @@
  *  4.装備売却  1ページ(50装備)分を売却
  *            画面が高速にチラつくので癲癇等に注意
  *
- *
 */
 
 void mode2() {
 
   keys = read_LCD_buttons(analogRead(0));
-
   /*  マカ錬金  */
   //マカ錬金選択
-  if (!dateSet) {
-    if ((keys == btnRIGHT || keys == btnLEFT) && keysOld == btnNONE) {
+  if (!setupMode) {
+    if (keys == btnRIGHT || keys == btnLEFT) {
       value += (keys == btnRIGHT) ? 1 : -1;
-      if (value > 4) value = 1;
-      else if (value < 1) value = 4;
+      value = toggleValue(value, 1, 4);  // 1-4トグル
       lcd.clear();
       lcdMelding();  // LCD表示
-      delay(250);
+      delay(300);
     }
 
     if (keys == btnSELECT && keysOld == btnNONE && value != 0) {
-      steyMode2 = !steyMode2;
+      runMode = !runMode;
     }
     keysOld = keys;
 
-    if (steyMode2) {
+    if (runMode) {
       /* 素材複数選択設定 */
       if (value == 1) {
-        dateSet = true;
+        setupMode = true;
         meldingStop = 4;
       }
       if (value == 2) {
@@ -82,7 +79,7 @@ void mode2() {
           if (repeatCount == 0) {
             meldingStop = 5;
             repeatCount = numDate;
-            steyMode2 = false;
+            runMode = false;
           }
         }
       }
@@ -105,7 +102,7 @@ void mode2() {
       }
     }
     /* ストップ後のLCD表示 */
-    if (!steyMode2) {
+    if (!runMode) {
       switch (meldingStop) {
         case 0:
           break;
@@ -123,7 +120,7 @@ void mode2() {
           lcd.setCursor(10, 1);
           lcd.print(" SRT>S");
           lap = 0;
-          delay(50);
+          delay(500);
           meldingStop = 0;
           break;
         case 3:
@@ -131,7 +128,7 @@ void mode2() {
           lcd.setCursor(10, 0);
           lcd.print("End");
           lap = 0;
-          delay(50);
+          delay(500);
           meldingStop = 0;
           break;
         case 4:
@@ -143,35 +140,21 @@ void mode2() {
         case 5:
           lcdMelding();  //LCD表示
           lap = 0;
-          delay(50);
+          delay(500);
           meldingStop = 0;
           break;
       }
     }
-  }  //  !dateSetここまで
+  }  //  !setupModeここまで
 
   /* 素材複数選択設定*/
-  if (dateSet) {
-    // 1つ目のポジションでセレクトボタンが押された場合
-    if (keys == btnSELECT && keysOld == btnNONE && value != 0) {
-      if (curPos) {
-        dateSet = false;
-        steyMode2 = false;
-        repeatCount = numDate;
-        lcd.noCursor();
-      }
+  if (setupMode) {
+    if ((keys == btnRIGHT || keys == btnLEFT) && keysOld == btnNONE) {
+      curPos += (keys == btnRIGHT) ? 1 : -1;
+      curPos = toggleCurPos(curPos, 1, 6);  // 1-6トグル
     }
-    // 左ボタンが押された場合
-    if ((keys == btnLEFT || keys == btnRIGHT) && keysOld == btnNONE) {
-      curPos += (keys == btnLEFT) ? -1 : 1;
-      if (curPos < 1) curPos = 6;
-      else if (curPos > 6) curPos = 1;
-    }
-    keysOld = keys;  // 前回のキー状態を記録
-
     if (keys == btnUP || keys == btnDOWN) {
       int increment = (keys == btnUP) ? 1 : -1;
-
       switch (curPos) {
         case 1:
           page_1 += increment;
@@ -204,12 +187,25 @@ void mode2() {
     updateCountMelding();
     lcd.setCursor(3, 1);
     if (languageFlag == 0) lcd.print("MATL > ");
-    else if (languageFlag == 1) lcd.print(jp("ｿｻﾞｲ > "));
+    else if (languageFlag == 1) lcd.print(jp("ｿｻﾞｲｲﾁ>"));
     lcd.setCursor(10, 1);
     lcd.print("S");
     lcdSetMaterial();  // LCDに表示する
     delay(100);
-  }  // dateSetここまで
+    /* 設定終了 */
+    if (keys == btnSELECT && keysOld == btnNONE && value != 0) {
+      if (curPos) {
+        setupMode = false;
+        runMode = false;
+        repeatCount = numDate;
+        lcd.noCursor();
+        lcdMelding();
+        lcd.setCursor(9, 1);
+        lcd.print(" ");
+      }
+    }
+    keysOld = keys;  // 前回のキー状態を記録
+  }                  // setupModeここまで
 }  // mode2ここまで
 
 
@@ -246,10 +242,8 @@ void showLcdCountMelding(int count) {
 void lcdMelding() {
   commonLcdRow1();  // 1列目LCD
   commonLcdRow2();  // 2列目LCD
-
   lcd.setCursor(10, 1);
   if (value >= 1 && value <= 3) lcd.print(" SRT>S");
-
   if (value == 1) {
     lcd.setCursor(11, 0);
     lcd.print("> T");

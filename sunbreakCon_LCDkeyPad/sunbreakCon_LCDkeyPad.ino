@@ -50,15 +50,13 @@ int read_LCD_buttons(int adc_key_in) {
 /* ============================================================== */
 
 int mode = 0;
+int value;
 // プログラム制御
 unsigned char keys;
 unsigned char keysOld;
-unsigned char modeNow;
-unsigned char modeOld;
 
 // 各種初期値
 bool initialLcd = false;
-bool joinExecuted = false;
 bool isFirstRun = true;
 bool firstRun = true;
 bool melding = false;
@@ -95,13 +93,9 @@ const unsigned long interval = 1000;  // コロンを点滅させる間隔（ミ
 bool colonVisible = false;            // コロンの表示状態
 
 // 制御
-int value;
-bool steyMode2;
-bool steyMode3;
-bool steyMode4;
+bool runMode;
 bool targetOn;
-bool dateSet = false;
-bool memory = false;
+bool setupMode = false;
 bool closeLottery = false;
 bool runStop = true;
 bool timesLeft;
@@ -114,11 +108,10 @@ int numValue;
 int numDate;
 int digitsQ[4];  // 各桁の数字を格納
 int digitsL[4];  // 各桁の数字を格納
-int digitsM[2];
+int digitsM[2];  // 各桁の数字を格納
 
 // カレンダー制御
-unsigned char day31 = 31;
-unsigned char day30 = 30;
+unsigned char lastDay = 31;
 unsigned char leap;  //2月の繰り返し回数
 unsigned char dayDate = 1;
 unsigned char monthDate = 1;
@@ -131,14 +124,18 @@ unsigned char curPos = 1;  // カーソル位置
 /* ============================================================== */
 /* 決定Aボタンと×ボタンの決定・キャンセルのキーマッピング */
 // Nintendo Switchは"0"、PlayStation 5は"1"
-bool consoleType = 0;  // Aボタンと×ボタンの決定、機種固有の違い
+// Aボタンと×ボタンの決定、機種固有の違い
+// マイナスボタン：キャプチャーボタン／CREATEボタン：タッチパッド
+bool consoleType = 0;  
 unsigned char confirmButton;
 unsigned char cancelButton;
+unsigned int minusButton;
+unsigned int captureButton;
 
 /* R(R1)ボタンとZR(R2)ボタンを入れ替えたマッピングの場合 =============== */
 // ゲームオプション / CONTROLS / L(L1)とR(R1)の入れ替え  →  R(R1)とZR(R2)のみ
 // ユーザー環境に合わせて数値変更  デフォルトは"0"  入れ替えた場合は"1"
-bool mappingR = 1;  // Rボタンのキーマッピングの有無
+bool mappingR = 0;  // Rボタンのキーマッピングの有無
 unsigned char mappingR1;
 unsigned char mappingR2;
 
@@ -166,10 +163,12 @@ bool languageFlag = 1;  // 言語のフラグ (0: 英語, 1: 日本語)
 // value, mode 0  / 設定
 const char *strings_S[][2] = {
   { "CONFIGURATION", "ｼｽﾃﾑｾｯﾃｲ" },         // 0
-  { "VideoGame Type", "ｹﾞｰﾑ ｷｼｭ" },        // 1
-  { "R-BTN Mapping", "Rﾎﾞﾀﾝﾏｯﾋﾟﾝｸﾞ" },     // 2
-  { "DATE Setting", "ﾋﾂﾞｹ ｾｯﾃｲ" },         // 3
-  { "SystemLANGUAGE", "SystemLANGUAGE" },  // 4
+  { "SystemLANGUAGE", "SystemLANGUAGE" },  // 1
+  { "VideoGame Type", "ｹﾞｰﾑ ｷｼｭ" },        // 2
+  { "R-BTN Mapping", "Rﾎﾞﾀﾝﾏｯﾋﾟﾝｸﾞ" },     // 3
+  /*{ "DATE Setting", "ﾋﾂﾞｹ ｾｯﾃｲ" },           // 4*/
+  { "Update Setting?", "ｾｯﾃｲｦ ｺｳｼﾝｼﾏｽｶ?" },  // 5
+  { "ConnectArduino", "Arduinoｦ ｾﾂｿﾞｸ" },    // 6
 };
 // value, mode 1  / 傀異錬成
 const char *strings_Q[][2] = {
@@ -203,8 +202,8 @@ const char *strings_A[][2] = {
 // value, mode 4  / amiibo福引
 const char *strings_F[][2] = {
   { "amiibo", "ｱﾐｰﾎﾞ" },     // 0
-  { "Lottery", "ﾌｸﾋﾞｷ  " },  // 1
-  { "Config", "ｾｯﾃｲ   " },   // 2
+  { "Config", "ｾｯﾃｲ   " },   // 1
+  { "Lottery", "ﾌｸﾋﾞｷ  " },  // 2
 };
 
 // 選択した言語に応じて文字列を表示する関数
@@ -230,66 +229,6 @@ void displayString(char index, char set) {
   if (str != nullptr) lcd.print(str);
 }
 
-
-/* ============================================================== */
-void startUp() {
-  switch (consoleType) {
-    case 0:
-      for (char i = 0; i < 5; i++) {
-        holdButton(Button::L, 0);
-        holdButton(Button::R, 100);
-        releaseButton(Button::L, 0);
-        releaseButton(Button::R, 100);
-      }
-      break;
-    case 1:
-      pushButton(Button::HOME, 50, 600);
-      break;
-  }
-}
-
-/* ============================================================== */
-void setup() {
-  // EEPROMからデータを読み込む
-  if ((EEPROM.read(0) == 0 || EEPROM.read(0) == 1) && (EEPROM.read(1) == 0 || EEPROM.read(1) == 1) && (EEPROM.read(2) == 0 || EEPROM.read(2) == 1)) {
-    bool savedConsoleType = EEPROM.read(0);
-    bool savedMappingR = EEPROM.read(1);
-    bool savedLanguageFlag = EEPROM.read(2);
-    savedDayDate = EEPROM.read(3);
-    savedMonthDate = EEPROM.read(4);
-    savedYearDate = EEPROM.read(5);
-    // 読み込んだデータを使って初期設定などを行う
-    consoleType = savedConsoleType;
-    mappingR = savedMappingR;
-    languageFlag = savedLanguageFlag;
-    dayDate = savedDayDate;
-    monthDate = savedMonthDate;
-    yearDate = savedYearDate;
-  }
-  /* 決定ボタン */
-  confirmButton = (consoleType == 0) ? Button::A : Button::B;
-  cancelButton = (consoleType == 0) ? Button::B : Button::A;
-  /* Rボタン入れ替え */
-  mappingR1 = (mappingR == 0) ? Button::R : Button::ZR;
-  mappingR2 = (mappingR == 0) ? Button::ZR : Button::R;
-
-  lcd.begin(16, 2);
-  lcd.setCursor(0, 0);
-  lcd.print("MONSTER HUNTER");
-
-  /* コントローラー接続 */
-  startUp();
-
-  /* LCDの初期値 */
-  delay(1000);
-  lcd.clear();
-  lcd.setCursor(0, 0);
-  lcd.print("RISE:SUNBREAK_");
-  lcd.print(consoleType == 0 ? "NS" : "PS");
-
-  startTime = millis();
-}
-
 /* ============================================================== */
 void lcdSelect() {
   const char *strings[][2] = {
@@ -310,11 +249,6 @@ void lcdSelect() {
 /*　各モードのデータ設定時のカーソル表示位置*/
 void cursorPosition() {
   switch (mode) {
-    case 0:
-      if (curPos == 1) lcd.setCursor(6, 1);        // 年の位置
-      else if (curPos == 2) lcd.setCursor(9, 1);   // 月の位置
-      else if (curPos == 3) lcd.setCursor(12, 1);  // 日の位置
-      break;
     case 1:
       if (curPos == 1) lcd.setCursor(12, 1);       // 1000の位
       else if (curPos == 2) lcd.setCursor(13, 1);  // 100の位
@@ -322,12 +256,12 @@ void cursorPosition() {
       else if (curPos == 4) lcd.setCursor(15, 1);  // 1の位
       break;
     case 2:
-      if (curPos == 1) lcd.setCursor(11, 1);       //
-      else if (curPos == 2) lcd.setCursor(12, 1);  //
-      else if (curPos == 3) lcd.setCursor(14, 1);  //
-      else if (curPos == 4) lcd.setCursor(15, 1);  //
-      else if (curPos == 5) lcd.setCursor(14, 0);  //
-      else if (curPos == 6) lcd.setCursor(15, 0);  //
+      if (curPos == 1) lcd.setCursor(11, 1);       // 1つめ使用素材ページ
+      else if (curPos == 2) lcd.setCursor(12, 1);  // 1つめ使用素材か所
+      else if (curPos == 3) lcd.setCursor(14, 1);  // 2つめ使用素材ページ
+      else if (curPos == 4) lcd.setCursor(15, 1);  // 2つめ使用素材か所
+      else if (curPos == 5) lcd.setCursor(14, 0);  // 周回数十の位
+      else if (curPos == 6) lcd.setCursor(15, 0);  // 周回数一の位
       break;
     case 4:
       if (curPos == 1) lcd.setCursor(9, 0);        // 年の位置
@@ -339,10 +273,10 @@ void cursorPosition() {
       else if (curPos == 7) lcd.setCursor(15, 1);  // 1の位
       break;
   }
-  if (dateSet) lcd.cursor();  // カーソル常時表示
+  if (setupMode) lcd.cursor();  // カーソル常時表示
 }
 
-/* ============================================================== */
+/* LCD制御=========================================================== */
 /* 1列目LCD */
 void commonLcdRow1() {
   lcd.setCursor(0, 0);
@@ -361,65 +295,120 @@ void commonLcdRow2() {
 
 /* LCD日付データ表示 */
 void showLcdDate() {
+  char text[10];
   if (languageFlag == 0) {
-    char text[10];
-    sprintf(text, "%02d/%02d/%02d", monthDate, dayDate, yearDate);  // "MM/DD/YY"
-    lcd.print(text);
+    sprintf(text, setupMode ? "M%02dD%02dY%02d" : " %02d/%02d/%02d", monthDate, dayDate, yearDate);  // "MM/DD/YY"
   } else if (languageFlag == 1) {
-    char text[10];
-    sprintf(text, "%02d/%02d/%02d", yearDate, monthDate, dayDate);  // "YY/MM/DD"
-    lcd.print(text);
+    sprintf(text, setupMode ? "Y%02dM%02dD%02d" : " %02d/%02d/%02d", yearDate, monthDate, dayDate);  // "YY/MM/DD"
+  }
+  lcd.print(text);
+}
+
+/* ============================================================== */
+void connectUp() {
+  if (!consoleType) {
+    for (char i = 0; i < 5; i++) {
+      holdButton(Button::L, 0);
+      holdButton(Button::R, 100);
+      releaseButton(Button::L, 0);
+      releaseButton(Button::R, 100);
+    }
+  } else {
+    pushButton(Button::HOME, 50, 600);
   }
 }
 
+/* ============================================================== */
+void setup() {
+
+  // EEPROMからデータを読み込む
+  if ((EEPROM.read(0) == 0 || EEPROM.read(0) == 1) && (EEPROM.read(1) == 0 || EEPROM.read(1) == 1) && (EEPROM.read(2) == 0 || EEPROM.read(2) == 1)) {
+    bool savedLanguageFlag = EEPROM.read(0);
+    bool savedConsoleType = EEPROM.read(1);
+    bool savedMappingR = EEPROM.read(2);
+    // 読み込んだデータを使って初期設定などを行う
+    languageFlag = savedLanguageFlag;
+    consoleType = savedConsoleType;
+    mappingR = savedMappingR;
+  }
+  /* 決定ボタン */
+  confirmButton = (consoleType == 0) ? Button::A : Button::B;  // Switch
+  cancelButton = (consoleType == 0) ? Button::B : Button::A;   // PS5
+  /* マイナスボタン：キャプチャーボタン／CREATEボタン：タッチパッド */
+  minusButton = (consoleType == 0) ? Button::MINUS : Button::CAPTURE;    // Switch
+  captureButton = (consoleType == 0) ? Button::CAPTURE : Button::MINUS;  // PS5
+  /* Rボタン入れ替え */
+  mappingR1 = (mappingR == 0) ? Button::R : Button::ZR;  // Switch
+  mappingR2 = (mappingR == 0) ? Button::ZR : Button::R;  // PS5
+
+  /* コントローラー接続 */
+  connectUp();
+  /* LCDの初期値 */
+  lcd.begin(16, 2);
+  lcd.setCursor(0, 0);
+  lcd.print("MONSTER HUNTER");
+  delay(1000);
+  lcd.clear();
+
+  startTime = millis();
+}
+/* ============================================================== */
+// mode トグル
+int toggleMode(int mode, int maxMode) {
+  if (mode > maxMode) return 0;
+  if (mode < 0) return maxMode;
+  return mode;
+}
+// value トグル
+int toggleValue(int value, int minValue, int maxValue) {
+  if (value > maxValue) return minValue;
+  if (value < minValue) return maxValue;
+  return value;
+}
+// curPos トグル
+int toggleCurPos(int curPos, int minCurPos, int maxCurPos) {
+  if (curPos > maxCurPos) return minCurPos;
+  if (curPos < minCurPos) return maxCurPos;
+  return curPos;
+}
 
 /* ============================================================== */
 void loop() {
 
-  modeNow = read_LCD_buttons(analogRead(0));
-
+  keys = read_LCD_buttons(analogRead(0));
   // DOWN - UPでモード切り替え
-  if (!dateSet && (modeNow == btnDOWN || modeNow == btnUP) && modeOld == btnNONE && value != -1) {
-    if (!memory) {
-      if (modeNow == btnUP) mode++;
-      else if (modeNow == btnDOWN) mode--;
-
+  if (!setupMode) {
+    if ((keys == btnDOWN || keys == btnUP) && !closeLottery) {
+      mode += (keys == btnUP) ? 1 : -1;
       // ゲーム機種によるモード制限
-      if (consoleType == 0) mode = (mode > 4) ? 0 : (mode < 0) ? 4
-                                                               : mode;
-      else if (consoleType == 1) mode = (mode > 3) ? 0 : (mode < 0) ? 3
-                                                                    : mode;
+      if (consoleType == 0) mode = toggleMode(mode, 4);
+      else if (consoleType == 1) mode = toggleMode(mode, 3);
       prg = 0;
+      // モード切り替え時の設定を保存
+      value = 0;
+      setupMode = false;
+      initialLcd = true;
+      if (mode != 3) prg = 0;  // 闘技場オートクエスト準備初期化
+      lcd.clear();
+      lcdSelect();  // 1列目LCD表示
+      commonLcdRow2();  // 2列目LCD表示
       delay(250);
     }
-
-    settingMemory();  // EEPROMに書き込む(モード0。valueが1から4、設定変更をした場合)
-    value = 0;
-    dateSet = false;
-    initialLcd = true;
-    if (mode != 3) prg = 0;  // 闘技場オートクエスト準備初期化
-
-    // 2列目LCD表示
-    lcd.clear();
-    lcd.setCursor(0, 1);
-    lcd.print("M");
-    lcd.print(mode);
-    lcd.print(".");
-    displayString(0, mode);  // マクロモード項目
   }
-  modeOld = modeNow;
 
   /* マクロ項目*/
   switch (mode) {
     // モード0の動作
     case 0:
       if (!initialLcd) {
+        lcd.setCursor(0, 0);
+        lcd.print("RISE:SUNBREAK_");
+        lcd.print(consoleType == 0 ? "NS" : "PS");
         lcd.setCursor(0, 1);
-        lcd.print("v3.8");
-        if (languageFlag == 0) lcd.print(" MODE>UP-DWN");
-        else if (languageFlag == 1) lcd.print(jp(" ﾓｰﾄﾞ>ｳｴorｼﾀ"));
+        lcd.print("v3.8 MODE>");
+        if (languageFlag == 0) lcd.print("UP-DWN");
+        else if (languageFlag == 1) lcd.print(jp("ｳｴorｼﾀ"));
       } else if (value == 0) {
-        lcdSelect();
         lcd.setCursor(3, 1);
         displayString(mode, 5);  // configuration
       }
@@ -427,22 +416,18 @@ void loop() {
       break;
     // モード1の動作
     case 1:
-      if (value == 0) lcdSelect();
       mode1();
       break;
     // モード2の動作
     case 2:
-      if (value == 0) lcdSelect();
       mode2();
       break;
     // モード3の動作
     case 3:
-      if (value == 0) lcdSelect();
       mode3();
       break;
     // モード4の動作
     case 4:
-      if (value == 0) lcdSelect();
       mode4();
       break;
   }

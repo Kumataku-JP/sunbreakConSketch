@@ -16,60 +16,53 @@ void mode1() {
 
   /*  傀異錬成  */
   //使用琥珀選択
-  if (!dateSet) {
-    if ((keys == btnRIGHT || keys == btnLEFT) && keysOld == btnNONE) {
+  if (!setupMode) {
+    if (keys == btnRIGHT || keys == btnLEFT) {
       value += (keys == btnRIGHT) ? 1 : -1;
-      if (value > 8) value = 1;       // 1から8へトグル
-      else if (value < 1) value = 8;  // 8から1へトグル
+      value = toggleValue(value, 1, 8);  // 1-8トグル
       lcd.clear();
       lcdQurious();  //LCD表示
-      delay(250);
+      delay(300);
     }
 
     if (keys == btnSELECT && keysOld == btnNONE && value != 0) {
       lcd.setCursor(10, 1);
       int repeatExecution = numValue;
-
       switch (value) {
         case 1:
-          lcdQuriousRun();
-          choiceCurrent();
+          commonQuriousMacro();
           choiceEssence();  // 精気琥珀
           countR++;
-          lcdQuriousStart();
+          lcdQuriousUpdate();
           break;
         case 2:
-          lcdQuriousRun();
-          choiceCurrent();
+          commonQuriousMacro();
           amberEssencePlus();  // 精気琥珀・上
           choiceEssence();
           countR++;
-          lcdQuriousStart();
+          lcdQuriousUpdate();
           break;
         case 3:
-          lcdQuriousRun();
-          choiceCurrent();
+          commonQuriousMacro();
           primeAmberEssence();  // 精気琥珀・尖
           choiceEssence();
           countR++;
-          lcdQuriousStart();
+          lcdQuriousUpdate();
           break;
         case 4:
-          lcdQuriousRun();
-          choiceCurrent();
+          commonQuriousMacro();
           royalAmberEssence();  // 精気琥珀・王
           choiceEssence();
           countR++;
-          lcdQuriousStart();
+          lcdQuriousUpdate();
           break;
         case 5:
           QuriousRun = 1;
-          lcdQuriousRun();
-          choiceCurrent();
+          commonQuriousMacro();
           pureAmberEssence();  // 精気琥珀・真
           choiceEssence();
           countR++;
-          lcdQuriousStart();
+          lcdQuriousUpdate();
           break;
           /* 連続錬成記録*/
         case 6:
@@ -98,37 +91,25 @@ void mode1() {
           break;
           /* 錬成回数のセット */
         case 8:
-          dateSet = !dateSet;
+          setupMode = !setupMode;
           lcdQurious();
           break;
       }
     }
     keysOld = keys;
-  }  // !dateSetここまで
+  }  // !setupModeここまで
 
   /* カウンター設定 */
-  if (dateSet) {
+  if (setupMode) {
     lcd.setCursor(11, 0);
     lcd.print("COM>S");
     lcd.setCursor(11, 1);
     lcd.print("s");
-    if (keys == btnSELECT && keysOld == btnNONE && value != 0) {
-      dateSet = !dateSet;
-      lcd.noCursor();
-      lcd.setCursor(11, 0);
-      lcd.print("SET>S");
-      lcd.setCursor(11, 1);
-      lcd.print("c");
+    /* 錬成回数のセット */
+    if ((keys == btnRIGHT || keys == btnLEFT) && keysOld == btnNONE) {
+      curPos += (keys == btnRIGHT) ? 1 : -1;
+      curPos = toggleCurPos(curPos, 1, 4);  // 1-4トグル
     }
-    // 錬成回数のセット  左右ボタンでカーソルを左に移動
-    if (keysOld == btnNONE) {
-      curPos += (keys == btnLEFT) ? -1 : (keys == btnRIGHT) ? 1
-                                                            : 0;
-      if (curPos < 1) curPos = 4;
-      if (curPos > 4) curPos = 1;
-    }
-    keysOld = keys;  // 前回のキー状態を記録
-
     // カーソル位置が12-15のときに上下ボタンを押すと数字を増加
     if (keys == btnUP || keys == btnDOWN) {
       if (curPos >= 1 && curPos <= 4) {
@@ -141,16 +122,27 @@ void mode1() {
     }
     lcdSetQurious();  // 錬成回数設定をLCDに表示する
     delay(100);
-  }  // dateSetここまで
+
+    /* 設定終了 */
+    if (keys == btnSELECT && keysOld == btnNONE && value != 0) {
+      setupMode = !setupMode;
+      lcd.noCursor();
+      lcd.setCursor(11, 0);
+      lcd.print("SET>S");
+      lcd.setCursor(11, 1);
+      lcd.print("c");
+    }
+    keysOld = keys;  // 前回のキー状態を記録
+  }                  // setupModeここまで
 }  // mode1ここまで
 
-void lcdSetQurious() {
-  lcd.setCursor(12, 1);
-  updateCountQurious();
-  cursorPosition();
-}
 
-// 各桁の数字をディスプレイに表示
+/* 共通マクロ */
+void commonQuriousMacro() {
+  lcdQuriousRun();
+  choiceCurrent();
+}
+// 各桁の数字を更新
 void updateCountQurious() {
   numValue = 0;
   for (int i = 0; i < 4; i++) {
@@ -159,6 +151,30 @@ void updateCountQurious() {
   }
 }
 
+/* LCD制御=========================================================== */
+void lcdSetQurious() {
+  lcd.setCursor(12, 1);
+  updateCountQurious();
+  cursorPosition();
+}
+
+void lcdQuriousRun() {
+  lcd.setCursor(10, 1);
+  lcd.print(" Run  ");
+}
+void lcdQuriousUpdate() {
+  char text[5];
+  lcd.setCursor(11, 0);
+  lcd.print("t");
+  sprintf(text, "%4d", countR);
+  lcd.print(text);
+  lcd.setCursor(10, 1);
+  lcd.print(" Run>S");
+}
+void lcdQuriousEnd() {
+  lcd.setCursor(10, 1);
+  lcd.print(" End  ");
+}
 
 /* LCD表示 */
 void lcdQurious() {
@@ -190,17 +206,4 @@ void lcdQurious() {
       lcd.print(digitsQ[(int)i]);
     }
   }
-}
-
-void lcdQuriousRun() {
-  lcd.setCursor(10, 1);
-  lcd.print(" Run  ");
-}
-void lcdQuriousStart() {
-  lcd.setCursor(10, 1);
-  lcd.print(" SRT>S");
-}
-void lcdQuriousEnd() {
-  lcd.setCursor(10, 1);
-  lcd.print(" End  ");
 }

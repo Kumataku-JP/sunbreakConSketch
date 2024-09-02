@@ -20,36 +20,35 @@ void mode3() {
 
   /*  オートプレイ  */
   //オート選択
-  if (!steyMode3) {
-    if ((keys == btnRIGHT || keys == btnLEFT) && keysOld == btnNONE && !dateSet) {
+  if (!runMode) {
+    if ((keys == btnRIGHT || keys == btnLEFT) && !setupMode) {
       value += (keys == btnRIGHT) ? 1 : -1;
-      if (value > 5) value = 1;  // 1から5へトグル
-      if (value < 1) value = 5;  // 5から1へトグル
+      value = toggleValue(value, 1, 5);  // 1-5トグル
       lcd.clear();
       lcdAuto();                // LCD表示
       if (value != 4) prg = 0;  // 4を途中でストップした時にprgを初期値に戻す
-      delay(250);
+      delay(300);
     }
   }
   if (keys == btnSELECT && keysOld == btnNONE && value != 0) {
-    steyMode3 = !steyMode3;
-    dateSet = steyMode3;
+    runMode = !runMode;
+    setupMode = runMode;
     lcd.setCursor(11, 1);
-    lcd.print(steyMode3 ? "STP>S" : "SRT>S");
+    lcd.print(runMode ? "STP>S" : "SRT>S");
     delay(250);
   }
   /* オート実行中のモーション切り替え */
-  if (steyMode3) {
-    // steyModeがtrueの時に上下ボタンでtargetOnを切り替え
+  if (runMode) {
+    // runModeがtrueの時に上下ボタンでtargetOnを切り替え
     if (keys == btnDOWN && keysOld == btnNONE && value >= 1 && value <= 5) targetOn = !targetOn;
-    // steyModeがtrueの時に上左右ボタンでmelodyTypeを切り替え
+    // runModeがtrueの時に上左右ボタンでmelodyTypeを切り替え
     if (keys == btnUP && value >= 1 && value <= 4) melody = 0;     // X旋律
     if (keys == btnRIGHT && value >= 1 && value <= 4) melody = 1;  // A旋律
     if (keys == btnLEFT && value >= 1 && value <= 4) melody = 2;   // XA旋律
   }
   keysOld = keys;
 
-  if (value != 0 && steyMode3) {
+  if (value != 0 && runMode) {
     if (isFirstRun) {
       // stopTimeが60秒経過しているかどうかをチェックしてから初期化
       if (!reStart || startTimeS == 0) {
@@ -62,44 +61,36 @@ void mode3() {
     }
     switch (value) {
       case 1:
-        lcdMelody();
-        elapsedTime();  // LCD表示
+        commonAutoMacro();  // 共通マクロ
         autoArena();
-        if (targetOn) target();
         break;
       case 2:
-        lcdMelody();
-        elapsedTime();  // LCD表示
+        commonAutoMacro();  // 共通マクロ
         autoInfernal();
-        if (targetOn) target();
         break;
       case 3:
-        lcdMelody();
-        elapsedTime();  // LCD表示
+        commonAutoMacro();  // 共通マクロ
         autoForlorn();
-        if (targetOn) target();
         break;
       case 4:
         lcdCruise();
         autoArenaCruising();
         if (prg == 6) {
-          lcdMelody();
-          elapsedTime();  // LCD表示
+          commonAutoMacro();  // 共通マクロ
           autoArena();
-          if (targetOn) target();
         }
         break;
       case 5:
-        lcdItem();      // 特産品LCD
-        elapsedTime();  // LCD表示
-        repeatA();
+        lcdItem();                   // 特産品LCD
+        elapsedTime();               // LCD表示
         if (targetOn) repeatMove();  // 2分置きに移動
+        repeatA();
         break;
     }
   }
 
   //ストップ
-  if (value != 0 && !steyMode3) {
+  if (value != 0 && !runMode) {
     if (!reStart) {
       prg = 0;
       if (value >= 1 && value <= 4) {
@@ -118,7 +109,7 @@ void mode3() {
       lcd.print("STOP");
       lcd.setCursor(10, 1);
       lcd.print("RSRT>S");
-      dateSet = false;
+      setupMode = false;
       skipExec = false;
       isFirstRun = true;
       runStop = true;
@@ -131,20 +122,27 @@ void mode3() {
   }
 }
 
+/* 共通マクロ */
+void commonAutoMacro() {
+  lcdMelody();    // LCD表示旋律タイプ
+  elapsedTime();  // LCD表示経過時間
+  if (targetOn) target();
+}
+
+/* LCD制御=========================================================== */
 /* 準備LCD */
 void lcdCruise() {
   lcd.setCursor(2, 0);
   displayString(value, 3);  // ArenaAuto
   lcd.setCursor(3, 1);
-  if (prg == 0) lcd.print("Plaza.  ");
-  else if (prg == 1) lcd.print("Quest.. ");
-  else if (prg == 2) lcd.print("TeaShop.");
-  else if (prg == 3) lcd.print("Dango.. ");
-  else if (prg == 4) lcd.print("Loading.");
-  else if (prg == 5) lcd.print("Arena.. ");
+  if (prg == 0) lcd.print("Plaza. ");
+  else if (prg == 1) lcd.print("Quest..");
+  else if (prg == 2) lcd.print("TeaShop");
+  else if (prg == 3) lcd.print("Dango..");
+  else if (prg == 4) lcd.print("Loading");
+  else if (prg == 5) lcd.print("Arena..");
 }
-
-/* 旋律LCD */
+/* 旋律タイプLCD */
 void lcdMelody() {
   const char* melodyStrings[][2] = {
     { "MelodyX ", "ｾﾝﾘﾂ X  " },  // melody == 0
@@ -154,7 +152,6 @@ void lcdMelody() {
   lcd.setCursor(3, 1);
   lcd.print((languageFlag == 0) ? melodyStrings[melody][0] : jp(melodyStrings[melody][1]));
 }
-
 /* 特産品LCD */
 void lcdItem() {
   lcd.setCursor(3, 1);
@@ -163,11 +160,9 @@ void lcdItem() {
                        : (targetOn ? jp("ｲﾄﾞｳｻｲｼｭ") : jp("ﾘﾋﾟｰﾄA  "));
   lcd.print(text);
 }
-
-/* 経過時間表示 */
+/* 経過時間LCD表示 */
 void elapsedTime() {
   unsigned long currentMillis = millis();  // 現在の時間を取得
-
   // 1秒ごとに点滅を切り替える
   if (currentMillis - previousMillis >= interval) {
     colonVisible = !colonVisible;    // 表示状態を反転させる
@@ -176,7 +171,6 @@ void elapsedTime() {
   // 経過時間を計算
   unsigned long elapsed = currentMillis - referenceTime;
   unsigned long minutes = elapsed / 60000;  // 経過時間を分に変換
-
   // 経過時間表示位置
   lcd.setCursor((value >= 1 && value <= 4) ? 10 : 9, 0);
   lcd.print(targetOn && (value >= 1 && value <= 4) ? "TGT" : "RUN");

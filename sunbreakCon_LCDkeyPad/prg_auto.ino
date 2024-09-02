@@ -1,10 +1,7 @@
+/* 特産品採集====================================================== */
 /* 城塞高地特産品 固定採集 */
 void repeatA() {
   now = millis();
-  if (isFirstRun) {
-    isFirstRun = false;
-    startTimeA = now;
-  }
   // 2秒おきに実行
   if (now - startTimeA >= 2000) {
     startTimeA = now;
@@ -32,82 +29,48 @@ void repeatMove() {
 /* 闘技場自動 狩猟笛================================================ */
 /* 闘技場 */
 void autoArena() {
-  leftStickTilt(5, 100);
   now = millis();
-  if (isFirstRun) {
-    silkbind_4();  // 抜刀共鳴音珠・震打
-    isFirstRun = false;
-    startTimeA = now;
-  }
-  silkbind_5();  // スライドビート・鉄蟲糸響打
-  melodyType();  // 旋律
+  leftStickTilt(5, 100);  // 移動方向
+  silkbind_4();           // 抜刀共鳴音珠・震打
+  silkbind_5();           // スライドビート・鉄蟲糸響打
+  melodyType();           // 旋律
   times++;
 }
-
 
 /* 極泉郷 */
 void autoInfernal() {
-  leftStickTilt(40, 100);
   now = millis();
-  // 抜刀共鳴音珠・震打
-  if (isFirstRun) {
-    silkbind_4();  // 抜刀共鳴音珠・震打
-    isFirstRun = false;
-    startTimeA = now;
-  }
-  // 納刀A
-  if (now - startTimeB >= 43000 && now - startTimeS > 300000) {
-    skipSheathe = true;
-    skipExec = true;  // 納刀Aが実行中、他のコマンド不実行
-    startTimeB = now;
-    delay(500);
-    holdButton(mappingR1, 2500);
-    releaseButton(mappingR1);
-    leftStickTilt(90, 100);
-    pushButton(Button::A, 200, 40, 4);
-    leftStickNeutral();
-    skipSheathe = false;
-    skipExec = false;
-  }
-  silkbind_5();  // スライドビート・鉄蟲糸響打
-  melodyType();  // 旋律
+  leftStickTilt(40, 100);  // 移動方向
+  silkbind_4();            // 抜刀共鳴音珠・震打
+  Sheathe();               // 納刀A
+  silkbind_5();            // スライドビート・鉄蟲糸響打
+  melodyType();            // 旋律
   times++;
 }
-
 
 /* 塔の秘境 */
 void autoForlorn() {
-  leftStickTilt(25, 100);
   now = millis();
-  if (isFirstRun) {
-    silkbind_4();  // 抜刀共鳴音珠・震打
-    isFirstRun = false;
-    startTimeA = now;
-  }
-  // 納刀A
-  if (now - startTimeB >= 43000 && now - startTimeS > 300000) {
-    skipSheathe = true;
-    skipExec = true;  // 納刀Aが実行中、他のコマンド不実行
-    startTimeB = now;
-    delay(500);
-    holdButton(mappingR1, 2500);
-    pushButton(Button::A, 200, 40, 4);
-    releaseButton(mappingR1);
-    skipSheathe = false;
-    skipExec = false;
-  }
-  silkbind_5();  // スライドビート・鉄蟲糸響打
-  melodyType();  // 旋律
+  leftStickTilt(25, 100);  // 移動方向
+  silkbind_4();            // 抜刀共鳴音珠・震打
+  Sheathe();               // 納刀A
+  silkbind_5();            // スライドビート・鉄蟲糸響打
+  melodyType();            // 旋律
   times++;
 }
+/* ============================================================== */
 
 // 共鳴音珠・震打
 void silkbind_4() {
-  pushButton(Button::X, 60, 900);
-  holdButton(Button::ZL, 0);
-  holdButton(Button::A, 200);
-  releaseButton(Button::ZL);
-  releaseButton(Button::A);
+  if (isFirstRun) {
+    pushButton(Button::X, 60, 900);
+    holdButton(Button::ZL);
+    holdButton(Button::A, 200);
+    releaseButton(Button::ZL);
+    releaseButton(Button::A);
+    startTimeA = now;
+  }
+  isFirstRun = false;
 }
 // スライドビート・鉄蟲糸響打
 void silkbind_5() {
@@ -115,12 +78,27 @@ void silkbind_5() {
     skipExec = true;  // 納刀Aが実行中、他のコマンド不実行
     startTimeA = now;
     delay(500);
-    holdButton(Button::ZL, 0);
+    holdButton(Button::ZL);
     holdButton(Button::X, 200);
-    releaseButton(Button::ZL, 0);
+    releaseButton(Button::ZL);
     releaseButton(Button::X, 900);
     pushButton(mappingR2, 700, 50);
     skipExec = false;
+  }
+}
+// 納刀
+void Sheathe() {
+  if (now - startTimeB >= 43000 && now - startTimeS > 300000) {
+    skipSheathe = skipExec = true;  // 納刀Aが実行中、他のコマンド不実行
+    startTimeB = now;
+    delay(500);
+    holdButton(mappingR1, 2500);
+    if (value == 2) {
+      leftStickTilt(90, 100);
+    }
+    pushButton(Button::A, 200, 40, 4);
+    releaseButton(mappingR1);
+    skipSheathe = skipExec = false;
   }
 }
 // 回復大旋律タイプ
@@ -137,9 +115,9 @@ void melodyType() {
         break;
       case 2:  // XA旋律
         pushButton(mappingR2, 400, 50, 2);
-        holdButton(Button::X, 0);
+        holdButton(Button::X);
         holdButton(Button::A, 100);
-        releaseButton(Button::A, 0);
+        releaseButton(Button::A);
         releaseButton(Button::X, 500);
         break;
     }
@@ -152,10 +130,11 @@ void target() {
   }
 }
 
+/* ============================================================== */
 /* クエスト準備開始まで */
 void autoArenaCruising() {
   if (prg == 0) {
-    pushButton(Button::MINUS, 100, 500);  //観測拠点 中央広場
+    pushButton(minusButton, 100, 500);  //観測拠点 中央広場
     pushButton(confirmButton, 100, 500);
     leftStickTilt(30, 100, 1200);  //チッチェまで移動
     leftStickNeutral();
@@ -170,7 +149,7 @@ void autoArenaCruising() {
     delay(2000);
     prg++;
   } else if (prg == 2) {
-    pushButton(Button::MINUS, 100, 500);  //茶屋前
+    pushButton(minusButton, 100, 500);  //茶屋前
     pushHat(Hat::DOWN, 50, 50, 2);
     pushButton(confirmButton, 100, 500);
     leftStickTilt(-20, 100, 1000);
@@ -189,9 +168,9 @@ void autoArenaCruising() {
     prg++;
   } else if (prg == 4) {
     if (consoleType == 0) {
-      delay(21000);  //Switchロード時間
+      delay(20000);  //Switchロード時間
     } else if (consoleType == 1) {
-      delay(10000);  //PS5ロード時間
+      delay(5000);  //PS5ロード時間
     }
     prg++;
   } else if (prg == 5) {
@@ -204,7 +183,7 @@ void autoArenaCruising() {
     pushButton(Button::RCLICK);  // ターゲットオン
     holdButton(mappingR1);
     leftStickTilt(20, 100, 1500);  // 移動
-    leftStickTilt(0, 100, 10000);   // 移動
+    leftStickTilt(0, 100, 10000);  // 移動
     releaseButton(mappingR1);
     prg++;
   }

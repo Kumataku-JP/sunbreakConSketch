@@ -35,7 +35,7 @@ void choiceEssence() {
   pushButton(confirmButton);           // 精気琥珀・真選択
   pushHat(Hat::DOWN);                  // 使用数MAX指定
   pushButton(confirmButton);           // 選択完了
-  pushButton(Button::MINUS);   // 決定までカーソル移動
+  pushButton(minusButton);   // 決定までカーソル移動
   pushButton(confirmButton, 40, 100);  // 決定
   pushButton(confirmButton);   // 確認画面
 }
@@ -43,5 +43,5 @@ void choiceEssence() {
 void capture() {
   if (consoleType == 0) delay(700);
   else if (consoleType == 1) delay(500);
-  pushButton(Button::CAPTURE, 100, 100);
+  pushButton(captureButton, 100, 100);
 }

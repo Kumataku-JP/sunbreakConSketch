@@ -1,6 +1,3 @@
-/* v1.2*/
-
-
 /*  1.傀異マカ錬金 素材複数選択  覇気  */
 void meldingVigor() {
   if (lap == 0) {
@@ -21,7 +18,7 @@ void meldingVigor() {
     pushButton(Button::R, 40, 40, (page_1 - 1));  // 1素材目ページ移動
     pushHat(Hat::DOWN, 40, 40, (line_1 - 1));     // 素材まで移動
     pushButton(confirmButton);                    // 素材選択
-    pushHat(Hat::DOWN);                           // 個数調整
+    pushHat(Hat::DOWN);                           // 最大個数
     if (page_2 != 0) {
       pushHat(Hat::DOWN);  // 個数調整
     }
@@ -46,7 +43,7 @@ void meldingVigor() {
       pushHat(Hat::DOWN);         // 指定個数
       pushButton(confirmButton);  // 選択完了
     }
-    pushButton(Button::MINUS);  // 決定までのカーソル移動
+    pushButton(minusButton);    // 決定までのカーソル移動
     pushButton(confirmButton);  // 決定
     pushHat(Hat::RIGHT);        // はい  に移動
     pushButton(confirmButton);  // はい  決定
@@ -85,7 +82,7 @@ void meldingCyclus() {
     pushHat(Hat::RIGHT, 50, 90);
     pushButton(confirmButton);  // 10
 
-    pushButton(Button::MINUS, 50, 90);  // 決定までのカーソル移動
+    pushButton(minusButton, 50, 90);    // 決定までのカーソル移動
     pushButton(confirmButton, 40, 90);  // 決定
     pushHat(Hat::RIGHT);                // はい  に移動
     pushButton(confirmButton, 40, 90);  // はい  決定
@@ -96,7 +93,7 @@ void meldingCyclus() {
     pushHat(Hat::DOWN);         // 決定までのカーソル移動
     pushButton(confirmButton);  // 釜選択
     meldingStop = 2;
-    steyMode2 = false;
+    runMode = false;
   }
 }
 /*  護石受取り画面での処理  */
@@ -107,9 +104,9 @@ void repeatMelding() {
     melding = true;
   } else if (melding && repeatCount == 0) {
     melding = false;
-    steyMode2 = false;
+    runMode = false;
   } else {
-    steyMode2 = false;
+    runMode = false;
   }
 }
 
@@ -131,7 +128,7 @@ void sellEquipment() {
   if (lap == 50) {
     pushButton(Button::R, 100);
     meldingStop = 2;
-    steyMode2 = false;
+    runMode = false;
     lcd.noCursor();
   }
 }
