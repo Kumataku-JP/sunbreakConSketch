@@ -135,7 +135,7 @@ void lcdCruise() {
   lcd.setCursor(2, 0);
   displayString(value, 3);  // ArenaAuto
   lcd.setCursor(3, 1);
-  if (prg == 0) lcd.print("Plaza. ");
+  if (prg == 0) lcd.print("Plaza...");
   else if (prg == 1) lcd.print("Quest..");
   else if (prg == 2) lcd.print("TeaShop");
   else if (prg == 3) lcd.print("Dango..");

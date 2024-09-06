@@ -49,8 +49,7 @@ void mode2() {
       if (value == 1) {
         setupMode = true;
         meldingStop = 4;
-      }
-      if (value == 2) {
+      } else if (value == 2) {
         if (repeatCount == 0) {
           meldingStop = 1;
           lcd.setCursor(10, 0);
@@ -82,23 +81,18 @@ void mode2() {
             runMode = false;
           }
         }
-      }
-      if (value == 3) {
-        meldingStop = 1;
+      } else if (value >= 3 && value <= 4) {
         lcd.setCursor(10, 0);
         lcd.print("Run");
         lcd.setCursor(10, 1);
         lcd.print(" STP>S");
-        meldingCyclus();
       }
-      // 装備売却
-      else if (value == 4) {
+      if (value == 3) {
+        meldingStop = 1;
+        meldingCyclus();
+      } else if (value == 4) {
         meldingStop = 2;
-        lcd.setCursor(10, 0);
-        lcd.print("RUN");
-        lcd.setCursor(10, 1);
-        lcd.print(" STP>S");
-        sellEquipment();
+        sellEquipment();  // 装備売却
       }
     }
     /* ストップ後のLCD表示 */
@@ -155,31 +149,24 @@ void mode2() {
     }
     if (keys == btnUP || keys == btnDOWN) {
       int increment = (keys == btnUP) ? 1 : -1;
+      char *matl = nullptr;  // ポインタを使用して対象変数を指す
       switch (curPos) {
-        case 1:
-          page_1 += increment;
-          if (page_1 > 9) page_1 = 1;
-          else if (page_1 < 1) page_1 = 9;
-          break;
-        case 2:
-          line_1 += increment;
-          if (line_1 > 7) line_1 = 1;
-          else if (line_1 < 1) line_1 = 7;
-          break;
-        case 3:
-          page_2 += increment;
-          if (page_2 > 9) page_2 = 0;
-          else if (page_2 < 0) page_2 = 9;
-          break;
-        case 4:
-          line_2 += increment;
-          if (line_2 > 7) line_2 = 0;
-          else if (line_2 < 0) line_2 = 7;
-          break;
+        case 1: matl = &page_1; break;
+        case 2: matl = &line_1; break;
+        case 3: matl = &page_2; break;
+        case 4: matl = &line_2; break;
         case 5:
         case 6:
           digitsM[curPos - 5] = (digitsM[curPos - 5] + increment + 10) % 10;
-          break;
+          delay(100);
+          return;
+      }
+      if (matl) {
+        *matl += increment;
+        if (*matl > ((*matl == page_2 || *matl == line_2) ? 9 : 7))
+          *matl = ((*matl == page_2 || *matl == line_2) ? 0 : 1);
+        else if (*matl < ((*matl == page_2 || *matl == line_2) ? 0 : 1))
+          *matl = ((*matl == page_2 || *matl == line_2) ? 9 : 7);
       }
       delay(100);
     }
@@ -208,7 +195,7 @@ void mode2() {
   }                  // setupModeここまで
 }  // mode2ここまで
 
-
+/* LCD制御=========================================================== */
 /* 素材設定LCD表示 */
 void lcdSetMaterial() {
   char text[2];

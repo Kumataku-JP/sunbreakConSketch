@@ -1,10 +1,14 @@
 /* 特産品採集====================================================== */
 /* 城塞高地特産品 固定採集 */
 void repeatA() {
-  now = millis();
+  startTime = millis();
+  if (isFirstRun) {
+    isFirstRun = false;
+    startTimeA = startTime;
+  }
   // 2秒おきに実行
-  if (now - startTimeA >= 2000) {
-    startTimeA = now;
+  if (startTime - startTimeA >= 2000) {
+    startTimeA = startTime;
     pushButton(Button::A);
   }
 }
@@ -12,12 +16,12 @@ void repeatA() {
 /* 城塞高地特産品 移動採集 */
 void repeatMove() {
   // 2分おきに移動
-  if (!skipExec && now - startTimeB >= 120000) {
-    startTimeB = now;
+  if (!skipExec && startTime - startTimeB >= 120000) {
+    startTimeB = startTime;
     skipExec = true;
     lcd.setCursor(10, 1);
     lcd.cursor();
-  } else if (skipExec && now - startTimeB >= 5000) {
+  } else if (skipExec && startTime - startTimeB >= 5000) {
     leftStickTilt(180, 100, 1100);
     leftStickNeutral();
     pushButton(Button::L, 40, 40, 2);  // カメラ補整
@@ -29,7 +33,7 @@ void repeatMove() {
 /* 闘技場自動 狩猟笛================================================ */
 /* 闘技場 */
 void autoArena() {
-  now = millis();
+  startTime = millis();
   leftStickTilt(5, 100);  // 移動方向
   silkbind_4();           // 抜刀共鳴音珠・震打
   silkbind_5();           // スライドビート・鉄蟲糸響打
@@ -39,7 +43,7 @@ void autoArena() {
 
 /* 極泉郷 */
 void autoInfernal() {
-  now = millis();
+  startTime = millis();
   leftStickTilt(40, 100);  // 移動方向
   silkbind_4();            // 抜刀共鳴音珠・震打
   Sheathe();               // 納刀A
@@ -50,7 +54,7 @@ void autoInfernal() {
 
 /* 塔の秘境 */
 void autoForlorn() {
-  now = millis();
+  startTime = millis();
   leftStickTilt(25, 100);  // 移動方向
   silkbind_4();            // 抜刀共鳴音珠・震打
   Sheathe();               // 納刀A
@@ -68,15 +72,15 @@ void silkbind_4() {
     holdButton(Button::A, 200);
     releaseButton(Button::ZL);
     releaseButton(Button::A);
-    startTimeA = now;
+    startTimeA = startTime;
   }
   isFirstRun = false;
 }
 // スライドビート・鉄蟲糸響打
 void silkbind_5() {
-  if (!skipSheathe && now - startTimeA >= 30000) {
+  if (!skipSheathe && startTime - startTimeA >= 30000) {
     skipExec = true;  // 納刀Aが実行中、他のコマンド不実行
-    startTimeA = now;
+    startTimeA = startTime;
     delay(500);
     holdButton(Button::ZL);
     holdButton(Button::X, 200);
@@ -88,9 +92,9 @@ void silkbind_5() {
 }
 // 納刀
 void Sheathe() {
-  if (now - startTimeB >= 43000 && now - startTimeS > 300000) {
+  if (startTime - startTimeB >= 43000 && startTime - startTimeS > 300000) {
     skipSheathe = skipExec = true;  // 納刀Aが実行中、他のコマンド不実行
-    startTimeB = now;
+    startTimeB = startTime;
     delay(500);
     holdButton(mappingR1, 2500);
     if (value == 2) {
@@ -125,7 +129,7 @@ void melodyType() {
 }
 // ターゲットチェンジ
 void target() {
-  if (times % 8 == 0 && now - startTimeS > 420000) {
+  if (times % 8 == 0 && startTime - startTimeS > 420000) {
     pushButton(Button::RCLICK);
   }
 }

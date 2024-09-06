@@ -60,9 +60,10 @@ void eepromUpdate() {
   lcd.clear();
   lcd.setCursor(0, 1);
   lcd.print("Update");
-  delay(750);
+  delay(1000);
   value = 0;
-  setupMode = false;
+  lcd.setCursor(0, 0);
+  lcdSelect();
   commonLcdRow2();                                                       // 2列目LCD表示
   confirmButton = (consoleType == 0) ? Button::A : Button::B;            // Switch
   cancelButton = (consoleType == 0) ? Button::B : Button::A;             // PS5
@@ -90,10 +91,10 @@ void lcdConfig() {
       else lcd.print((mappingR == 0) ? "R1 Default" : "R1 to R2");
       break;
     case 4:
-      lcd.print("Update > SELECT");
+      lcd.print("UPDATE>SELECT");
       break;
       /*case 5:
-      lcd.print("Connect > SELECT");
+      lcd.print("CONNECT>SELECT");
       break;*/
   }
 }

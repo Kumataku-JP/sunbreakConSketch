@@ -105,25 +105,14 @@ void mode4() {
     }    // runMode ここまで
 
     if (!runMode) {
-      switch (LotteryStop) {
-        case 1:  // 指定数終了
-          lcd.setCursor(0, 0);
-          lcd.print("CLOSE>L");
-          lcd.setCursor(10, 1);
-          lcd.print("RSRT>S");
-          closeLottery = true;
-          prg = 0;
-          LotteryStop = 0;
-          break;
-        case 2:  // 強制停止
-          lcd.setCursor(0, 0);
-          lcd.print("CLOSE>L");
-          lcd.setCursor(10, 1);
-          lcd.print("   END");
-          closeLottery = true;
-          prg = 0;
-          LotteryStop = 0;
-          break;
+      if (LotteryStop == 1 || LotteryStop == 2) {
+        lcd.setCursor(0, 0);
+        lcd.print("CLOSE>L");
+        lcd.setCursor(10, 1);
+        lcd.print(LotteryStop == 1 ? "RSRT>S" : "   END");
+        closeLottery = true;
+        prg = 0;
+        LotteryStop = 0;
       }
       delay(250);
     }
@@ -280,6 +269,7 @@ void showLcdAmiibo() {
 /* LCD表示 */
 void lcdAmiibo() {
   // 1列目LCD
+  lcd.clear();  // LCD初期化
   lcd.setCursor(0, 0);
   displayString(value, mode);
   // 2列目LCD
@@ -291,7 +281,6 @@ void lcdAmiibo() {
     lcd.print((languageFlag == 0) ? "SysDateRest  " : jp("ｼｽﾃﾑｶﾚﾝﾀﾞｼｮｷｶ"));
   }
   if (value == 1) {
-    lcd.print("  ");
     lcd.setCursor(7, 0);
     showLcdDate();  // 日付をLCDに表示する
     lcd.setCursor(7, 0);

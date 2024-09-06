@@ -74,9 +74,8 @@ char page_2 = 0;
 // 自動制御
 int times = 0;
 unsigned char melody = 0;
-unsigned long now;
 unsigned long elapsed;
-unsigned long startTime = 0;
+unsigned long startTime;
 unsigned long startTimeA = 0;
 unsigned long startTimeB = 0;
 unsigned long startTimeS = 0;
@@ -126,7 +125,7 @@ unsigned char curPos = 1;  // カーソル位置
 // Nintendo Switchは"0"、PlayStation 5は"1"
 // Aボタンと×ボタンの決定、機種固有の違い
 // マイナスボタン：キャプチャーボタン／CREATEボタン：タッチパッド
-bool consoleType = 0;  
+bool consoleType = 0;
 unsigned char confirmButton;
 unsigned char cancelButton;
 unsigned int minusButton;
@@ -162,13 +161,12 @@ char *jp(const char *text) {
 bool languageFlag = 1;  // 言語のフラグ (0: 英語, 1: 日本語)
 // value, mode 0  / 設定
 const char *strings_S[][2] = {
-  { "CONFIGURATION", "ｼｽﾃﾑｾｯﾃｲ" },         // 0
-  { "SystemLANGUAGE", "SystemLANGUAGE" },  // 1
-  { "VideoGame Type", "ｹﾞｰﾑ ｷｼｭ" },        // 2
-  { "R-BTN Mapping", "Rﾎﾞﾀﾝﾏｯﾋﾟﾝｸﾞ" },     // 3
-  /*{ "DATE Setting", "ﾋﾂﾞｹ ｾｯﾃｲ" },           // 4*/
-  { "Update Setting?", "ｾｯﾃｲｦ ｺｳｼﾝｼﾏｽｶ?" },  // 5
-  { "ConnectArduino", "Arduinoｦ ｾﾂｿﾞｸ" },    // 6
+  { "CONFIGURATION", "ｼｽﾃﾑｾｯﾃｲ" },           // 0
+  { "SystemLANGUAGE", "SystemLANGUAGE" },    // 1
+  { "VideoGame Type", "ｹﾞｰﾑ ｷｼｭ" },          // 2
+  { "R-BTN Mapping", "Rﾎﾞﾀﾝﾏｯﾋﾟﾝｸﾞ" },       // 3
+  { "Update Setting?", "ｾｯﾃｲｦ ｺｳｼﾝｼﾏｽｶ?" },  // 4
+  { "ConnectArduino", "Arduinoｦ ｾﾂｿﾞｸ" },    // 5
 };
 // value, mode 1  / 傀異錬成
 const char *strings_Q[][2] = {
@@ -202,8 +200,8 @@ const char *strings_A[][2] = {
 // value, mode 4  / amiibo福引
 const char *strings_F[][2] = {
   { "amiibo", "ｱﾐｰﾎﾞ" },     // 0
-  { "Config", "ｾｯﾃｲ   " },   // 1
-  { "Lottery", "ﾌｸﾋﾞｷ  " },  // 2
+  { "Config", "ｾｯﾃｲ" },   // 1
+  { "Lottery", "ﾌｸﾋﾞｷ" },  // 2
 };
 
 // 選択した言語に応じて文字列を表示する関数
@@ -390,7 +388,7 @@ void loop() {
       initialLcd = true;
       if (mode != 3) prg = 0;  // 闘技場オートクエスト準備初期化
       lcd.clear();
-      lcdSelect();  // 1列目LCD表示
+      lcdSelect();      // 1列目LCD表示
       commonLcdRow2();  // 2列目LCD表示
       delay(250);
     }
