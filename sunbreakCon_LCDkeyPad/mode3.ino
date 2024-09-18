@@ -8,7 +8,7 @@
  *  2.  極泉郷を狩猟笛で放置しクリアするマクロ 体力回復(大)=初期値X旋律
  *  3.  塔の秘境を狩猟笛で放置しクリアするマクロ 体力回復(大)=初期値X旋律
  *  4.  クエスト選択から始める場合のマクロ 闘技場のみ対応 討伐後selectボタンで停止し1分後に再開可能
- *    ※ 実行中にボタン  上=X旋律、右=A旋律、左=XA旋律、下=多頭クエスト用（ターゲット変更）
+ *  ※ 実行中にボタン  上=X旋律、右=A旋律、左=XA旋律、下=多頭クエスト用（ターゲット変更）
  *  5.  Aボタンのリピート(2秒間隔)単純なマクロ
  *    ※ 実行中に下を押すと採集に移動を含めたマクロ
  *  
@@ -33,6 +33,8 @@ void mode3() {
   if (keys == btnSELECT && keysOld == btnNONE && value != 0) {
     runMode = !runMode;
     setupMode = runMode;
+    lcd.clear();
+    lcdAuto();  // LCD表示
     lcd.setCursor(11, 1);
     lcd.print(runMode ? "STP>S" : "SRT>S");
     delay(250);
@@ -60,24 +62,39 @@ void mode3() {
       runStop = false;
     }
     switch (value) {
-      case 1:
-        commonAutoMacro();  // 共通マクロ
-        autoArena();
-        break;
-      case 2:
-        commonAutoMacro();  // 共通マクロ
-        autoInfernal();
-        break;
-      case 3:
-        commonAutoMacro();  // 共通マクロ
-        autoForlorn();
-        break;
-      case 4:
-        lcdCruise();
-        autoArenaCruising();
+      case 1:  // 闘技場オート
+        if (prg == 0) prg = 2;
+        lcdCruise();          // 実行中項目LCD表示
+        autoQuestCruising();  // 団子からオート
         if (prg == 6) {
-          commonAutoMacro();  // 共通マクロ
-          autoArena();
+          commonLcdMacro();  // LCD共通マクロ
+          autoArena();        // 闘技場
+        }
+        break;
+      case 2:  // 極泉郷オート
+        if (prg == 0) prg = 2;
+        lcdCruise();          // 実行中項目LCD表示
+        autoQuestCruising();  // 団子からオート
+        if (prg == 6) {
+          commonLcdMacro();  // LCD共通マクロ
+          autoInfernal();     // 極泉郷
+        }
+        break;
+      case 3:  // 塔の秘境オート
+        if (prg == 0) prg = 2;
+        lcdCruise();          // 実行中項目LCD表示
+        autoQuestCruising();  // 団子からオート
+        if (prg == 6) {
+          commonLcdMacro();  // LCD共通マクロ
+          autoForlorn();      // 塔の秘境
+        }
+        break;
+      case 4:                 // 闘技場クエスト受注から
+        lcdCruise();          // 実行中項目LCD表示
+        autoQuestCruising();  // クエスト受注からオート
+        if (prg == 6) {
+          commonLcdMacro();  // LCD共通マクロ
+          autoArena();        // 闘技場
         }
         break;
       case 5:
@@ -123,7 +140,7 @@ void mode3() {
 }
 
 /* 共通マクロ */
-void commonAutoMacro() {
+void commonLcdMacro() {
   lcdMelody();    // LCD表示旋律タイプ
   elapsedTime();  // LCD表示経過時間
   if (targetOn) target();
@@ -136,11 +153,11 @@ void lcdCruise() {
   displayString(value, 3);  // ArenaAuto
   lcd.setCursor(3, 1);
   if (prg == 0) lcd.print("Plaza...");
-  else if (prg == 1) lcd.print("Quest..");
+  else if (prg == 1) lcd.print("Accept.");
   else if (prg == 2) lcd.print("TeaShop");
   else if (prg == 3) lcd.print("Dango..");
   else if (prg == 4) lcd.print("Loading");
-  else if (prg == 5) lcd.print("Arena..");
+  else if (prg == 5) lcd.print("Hunting");
 }
 /* 旋律タイプLCD */
 void lcdMelody() {

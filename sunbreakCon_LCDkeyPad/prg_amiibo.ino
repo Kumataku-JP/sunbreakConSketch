@@ -52,7 +52,7 @@ void setupModeting() {
 
 /* 日更新関数 */
 void oneDay() {
-  settingScreen();
+  screenSetting();
   if (prg == 4) {
     switch (languageFlag) {
       case 0:                              // mm-dd-yyyy-hh-mm-AM/PM-confirm
@@ -73,7 +73,7 @@ void oneDay() {
 }
 /* 月日更新関数 */
 void oneMonth() {
-  settingScreen();
+  screenSetting();
   if (prg == 4) {
     switch (languageFlag) {
       case 0:                              // mm-dd-yyyy-hh-mm-AM/PM-confirm
@@ -99,7 +99,7 @@ void oneMonth() {
 }
 /* 年月日更新関数 */
 void oneYear() {
-  settingScreen();
+  screenSetting();
   if (prg == 4) {
     switch (languageFlag) {
       case 0:                              // mm-dd-yyyy-hh-mm-AM/PM-confirm
@@ -131,7 +131,7 @@ void oneYear() {
 /* ============================================================== */
 /*  HOME画面 */
 // ゲームから時間設定画面まで
-void settingScreen() {
+void screenSetting() {
   // ホーム画面から設定画面へ
   if (prg == 0) {
     pushButton(Button::HOME, 50, 600);
@@ -187,7 +187,7 @@ void lottery() {
 /* ============================================================== */
 
 // amiibo福引終了で日付を元に戻す。
-void settingScreenClose() {
+void screenSettingClose() {
   // ホーム画面から設定画面へ
   pushButton(Button::HOME, 50, 600);
   pushHat(Hat::LEFT, 50, 120);

@@ -1,6 +1,6 @@
 /*  マクロコントローラーシステム設定
  *   
- *  セレクトボタンで切り替え、設定後、上または下ボタンで本機に設定記録（EEPROM）
+ *  セレクトボタンで切り替え、設定後4で本機に設定記録（EEPROM）
  *  ※ Arduinoは、EEPROMに記録できる上限があるので不要な操作はしないように。
 */
 
@@ -93,8 +93,8 @@ void lcdConfig() {
     case 4:
       lcd.print("UPDATE>SELECT");
       break;
-      /*case 5:
+    case 5:
       lcd.print("CONNECT>SELECT");
-      break;*/
+      break;
   }
 }

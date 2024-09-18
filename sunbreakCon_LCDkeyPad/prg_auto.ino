@@ -44,7 +44,7 @@ void autoArena() {
 /* 極泉郷 */
 void autoInfernal() {
   startTime = millis();
-  leftStickTilt(40, 100);  // 移動方向
+  leftStickTilt(30, 100);  // 移動方向
   silkbind_4();            // 抜刀共鳴音珠・震打
   Sheathe();               // 納刀A
   silkbind_5();            // スライドビート・鉄蟲糸響打
@@ -136,59 +136,116 @@ void target() {
 
 /* ============================================================== */
 /* クエスト準備開始まで */
-void autoArenaCruising() {
-  if (prg == 0) {
-    pushButton(minusButton, 100, 500);  //観測拠点 中央広場
-    pushButton(confirmButton, 100, 500);
-    leftStickTilt(30, 100, 1200);  //チッチェまで移動
-    leftStickNeutral();
-    prg++;
-  } else if (prg == 1) {
-    pushButton(confirmButton, 100, 1000);  //クエスト選択
-    pushButton(confirmButton, 100, 100, 5);
-    pushHat(Hat::RIGHT, 100, 100);         // ロンディーネ
-    pushButton(confirmButton);             //盟友選択
-    pushHat(Hat::DOWN, 50, 50, 2);         //ヒノエ
-    pushButton(confirmButton, 50, 50, 2);  //盟友選択
-    delay(2000);
-    prg++;
-  } else if (prg == 2) {
-    pushButton(minusButton, 100, 500);  //茶屋前
-    pushHat(Hat::DOWN, 50, 50, 2);
-    pushButton(confirmButton, 100, 500);
-    leftStickTilt(-20, 100, 1000);
-    leftStickNeutral();
-    prg++;
-  } else if (prg == 3) {
-    pushButton(confirmButton, 100, 3000);  //だんご選択
-    pushButton(confirmButton, 100, 100, 3);
-    pushButton(Button::X);  //謹製おだんご券選択
-    pushHat(Hat::DOWN);     //2段目のだんご選択
-    pushButton(confirmButton, 100);
-    pushButton(confirmButton, 100, 3000);
-    pushButton(cancelButton, 50, 5000);
-    pushButton(Button::R, 100);
-    pushButton(confirmButton);
-    prg++;
-  } else if (prg == 4) {
-    if (consoleType == 0) {
-      delay(20000);  //Switchロード時間
-    } else if (consoleType == 1) {
-      delay(5000);  //PS5ロード時間
-    }
-    prg++;
-  } else if (prg == 5) {
-    holdButton(Button::ZL, 200);  // 早替え
-    holdButton(Button::X);
-    holdButton(Button::A, 200);
-    releaseButton(Button::ZL);
-    releaseButton(Button::X);
-    releaseButton(Button::A, 200);
-    pushButton(Button::RCLICK);  // ターゲットオン
-    holdButton(mappingR1);
-    leftStickTilt(20, 100, 1500);  // 移動
-    leftStickTilt(0, 100, 10000);  // 移動
-    releaseButton(mappingR1);
-    prg++;
+void autoQuestCruising() {
+  switch (prg) {
+    case 0:
+      processPlaza();
+      prg++;
+      break;
+    case 1:
+      processAccept();
+      prg++;
+      break;
+    case 2:
+      processTeaShop();
+      prg++;
+      break;
+    case 3:
+      processDango();
+      prg++;
+      break;
+    case 4:
+      processLoading();
+      prg++;
+      break;
+    case 5:
+      processStartQuest();
+      if (value == 1 || value == 4) processArena();
+      if (value == 2) processInfernal();
+      if (value == 3) processForlorn();
+      prg++;
+      break;
   }
+}
+//観測拠点 中央広場に移動 0
+void processPlaza() {
+  pushButton(minusButton, 100, 300);
+  pushButton(confirmButton, 100, 500);
+  leftStickTilt(30, 100, 1200);  // チッチェまで移動
+  leftStickNeutral();
+}
+//クエスト選択 1
+void processAccept() {
+  pushButton(confirmButton, 100, 1000);
+  pushButton(confirmButton, 100, 100, 5);
+  pushHat(Hat::RIGHT, 100, 100);         // ロンディーネ
+  pushButton(confirmButton);             // 盟友選択
+  pushHat(Hat::DOWN, 50, 50, 2);         // ヒノエ
+  pushButton(confirmButton, 50, 50, 2);  // 盟友選択
+  delay(2000);
+}
+//茶屋前に移動 2
+void processTeaShop() {
+  pushButton(minusButton, 100, 300);
+  pushHat(Hat::DOWN, 50, 50, 2);
+  pushButton(confirmButton, 100, 500);
+  leftStickTilt(-20, 100, 1000);
+  leftStickNeutral();
+}
+//だんご選択 3
+void processDango() {
+  pushButton(confirmButton, 100, 3000);
+  pushButton(confirmButton, 100, 100, 3);
+  pushButton(Button::X);  // 謹製おだんご券選択
+  pushHat(Hat::DOWN);     // 2段目のだんご選択
+  pushButton(confirmButton, 100);
+  pushButton(confirmButton, 100, 3000);
+  pushButton(cancelButton, 50, 5000);
+  pushButton(Button::R, 100);
+  pushButton(confirmButton);
+}
+// ロード時間 4
+void processLoading() {
+  if (consoleType == 0) {
+    delay(20000);  // Switchロード時間
+  } else if (consoleType == 1) {
+    delay(5000);  // PS5ロード時間
+  }
+}
+// クエスト開始時挙動 5
+void processStartQuest() {
+  holdButton(Button::ZL, 200);  // 早替え
+  holdButton(Button::X);
+  holdButton(Button::A, 200);
+  releaseButton(Button::ZL);
+  releaseButton(Button::X);
+  releaseButton(Button::A, 200);
+  pushButton(Button::RCLICK);  // ターゲットオン
+}
+// 闘技場の移動 6
+void processArena() {
+  holdButton(mappingR1);
+  leftStickTilt(20, 100, 1500);  // 虹ヒトダマドリ移動
+  leftStickTilt(0, 100, 10000);  // モンスターまで移動
+  releaseButton(mappingR1);
+}
+// 極泉郷の移動 6
+void processInfernal() {
+  holdButton(mappingR1);
+  leftStickTilt(-45, 100, 2400);      // 虹ヒトダマドリまで移動
+  leftStickTilt(50, 100, 3000);       // 大翔蟲まで移動
+  releaseButton(mappingR1);
+  leftStickTilt(90, 100, 500);       // 大翔蟲まで移動
+  pushButton(Button::A, 100, 50, 6);  // 大翔蟲
+  holdButton(mappingR1);
+  leftStickTilt(0, 100, 10000);       // モンスターまで移動
+  releaseButton(mappingR1);
+}
+// 塔の秘境の移動 6
+void processForlorn() {
+  holdButton(mappingR1);
+  leftStickTilt(-10, 100, 3500);      // 虹ヒトダマドリ大翔蟲まで移動
+  pushButton(Button::A, 200, 40, 2);  // 大翔蟲
+  leftStickTilt(0, 100, 10000);       // モンスターまで移動
+  releaseButton(mappingR1);
 }

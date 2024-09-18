@@ -27,7 +27,7 @@ void mode4() {
       value = toggleValue(value, 1, 2);  // 1-2トグル
       lcd.clear();                       // LCD初期化
       lcdAmiibo();                       // LCD表示
-      delay(100);
+      delay(300);
     } else if (closeLottery && keys == btnLEFT) {
       value = -1;   // closeLotteryがtrueの時に左ボタンを押した場合
       lcdAmiibo();  // LCD表示
@@ -82,7 +82,7 @@ void mode4() {
         lcd.setCursor(3, 1);
         lcd.print("Closing...");
         lcd.print("     ");
-        settingScreenClose();  // クローズ動作マクロ
+        screenSettingClose();  // クローズ動作マクロ
         // 初期化
         dayDate = savedDayDate;
         monthDate = savedMonthDate;
@@ -113,8 +113,8 @@ void mode4() {
         closeLottery = true;
         prg = 0;
         LotteryStop = 0;
+        delay(250);
       }
-      delay(250);
     }
     if (keys == btnSELECT && keysOld == btnNONE && value != 0) {
       runMode = !runMode;
@@ -138,7 +138,7 @@ void mode4() {
 
     /* データ設定 */
     if (keys == btnUP || keys == btnDOWN) {
-      setDate();  // 日付を増加させる
+      dateSet();  // 日付を増加させる
       // amiibo福引回数指定
       if (curPos >= 4 && curPos <= 7) {
         int digitValueLottery = digitsL[curPos - 4];
@@ -172,7 +172,7 @@ void mode4() {
 
 /* 日付制御=========================================================== */
 /* 日付の値の制御 */
-void setDate() {
+void dateSet() {
   int direction = (keys == btnUP) ? 1 : -1;
   if (languageFlag == 0) {
     if (curPos == 1) {  // 月

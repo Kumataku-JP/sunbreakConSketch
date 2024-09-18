@@ -2,7 +2,7 @@
  *  Nintendo Switch
  *  PlayStation 5
  *  モンハンライズサンブレイク  Ver.16.0.x
- *  プログラムセット Ver.3.8
+ *  プログラムセット Ver.3.9
  *
  *  DOWN-UPボタンでモードの切り替え
  *  モード0  システム設定  / System Setting
@@ -57,6 +57,7 @@ unsigned char keysOld;
 
 // 各種初期値
 bool initialLcd = false;
+bool joinExecuted = false;
 bool isFirstRun = true;
 bool firstRun = true;
 bool melding = false;
@@ -65,13 +66,13 @@ bool QuriousRun;
 // マカ錬金
 int meldingStop = 0;
 int LotteryStop = 0;
-int lap = 0;
 char line_1 = 1;
 char page_1 = 1;
 char line_2 = 0;
 char page_2 = 0;
 
 // 自動制御
+bool repeatLaps = false;
 int times = 0;
 unsigned char melody = 0;
 unsigned long elapsed;
@@ -166,7 +167,7 @@ const char *strings_S[][2] = {
   { "VideoGame Type", "ｹﾞｰﾑ ｷｼｭ" },          // 2
   { "R-BTN Mapping", "Rﾎﾞﾀﾝﾏｯﾋﾟﾝｸﾞ" },       // 3
   { "Update Setting?", "ｾｯﾃｲｦ ｺｳｼﾝｼﾏｽｶ?" },  // 4
-  { "ConnectArduino", "Arduinoｦ ｾﾂｿﾞｸ" },    // 5
+  /*{ "ConnectArduino", "Arduinoｦ ｾﾂｿﾞｸ" },    // 5*/
 };
 // value, mode 1  / 傀異錬成
 const char *strings_Q[][2] = {
@@ -190,17 +191,17 @@ const char *strings_M[][2] = {
 };
 // value, mode 3  / 自動プレイ
 const char *strings_A[][2] = {
-  { "AutoPlay", "ｵｰﾄﾌﾟﾚｲ" },           // 0
-  { "Arena", "ﾄｳｷﾞｼﾞｮｳ" },             // 1
-  { "Infernal", "ｺﾞｸｾﾝｷｮｳ" },          // 2
-  { "Forlorn", "ﾄｳﾉﾋｷｮｳ" },            // 3
-  { "ArenaAuto   ", "ﾄｳｷﾞｼﾞｮｳｵｰﾄ " },  // 4
-  { "ItemGath", "ﾄｸｻﾝﾋﾝ" },            // 5
+  { "AutoPlay", "ｵｰﾄﾌﾟﾚｲ" },       // 0
+  { "Arena", "ﾄｳｷﾞｼﾞｮｳ" },         // 1
+  { "Infernal", "ｺﾞｸｾﾝｷｮｳ" },      // 2
+  { "Forlorn", "ﾄｳﾉﾋｷｮｳ" },        // 3
+  { "ArenaAuto", "ﾄｳｷﾞｼﾞｮｳｵｰﾄ" },  // 4
+  { "ItemGath", "ﾄｸｻﾝﾋﾝ" },        // 5
 };
 // value, mode 4  / amiibo福引
 const char *strings_F[][2] = {
-  { "amiibo", "ｱﾐｰﾎﾞ" },     // 0
-  { "Config", "ｾｯﾃｲ" },   // 1
+  { "amiibo", "ｱﾐｰﾎﾞ" },   // 0
+  { "Config", "ｾｯﾃｲ" },    // 1
   { "Lottery", "ﾌｸﾋﾞｷ" },  // 2
 };
 
@@ -293,7 +294,7 @@ void commonLcdRow2() {
 
 /* LCD日付データ表示 */
 void showLcdDate() {
-  char text[10];
+  char text[7];
   if (languageFlag == 0) {
     sprintf(text, setupMode ? "M%02dD%02dY%02d" : " %02d/%02d/%02d", monthDate, dayDate, yearDate);  // "MM/DD/YY"
   } else if (languageFlag == 1) {
@@ -306,16 +307,21 @@ void showLcdDate() {
 void connectUp() {
   if (!consoleType) {
     for (char i = 0; i < 5; i++) {
-      holdButton(Button::L, 0);
+      holdButton(Button::L);
       holdButton(Button::R, 100);
-      releaseButton(Button::L, 0);
+      releaseButton(Button::L);
       releaseButton(Button::R, 100);
     }
   } else {
     pushButton(Button::HOME, 50, 600);
   }
 }
-
+/* 実行前にSwitchにUSB接続を処理 */
+void join() {
+  if (joinExecuted) return;  // 一度実行されていたら処理をスキップ
+  connectUp();
+  joinExecuted = true;  // 実行後にフラグをセット
+}
 /* ============================================================== */
 void setup() {
 
@@ -390,7 +396,8 @@ void loop() {
       lcd.clear();
       lcdSelect();      // 1列目LCD表示
       commonLcdRow2();  // 2列目LCD表示
-      delay(250);
+      join();
+      delay(300);
     }
   }
 
@@ -403,9 +410,8 @@ void loop() {
         lcd.print("RISE:SUNBREAK_");
         lcd.print(consoleType == 0 ? "NS" : "PS");
         lcd.setCursor(0, 1);
-        lcd.print("v3.8 MODE>");
-        if (languageFlag == 0) lcd.print("UP-DWN");
-        else if (languageFlag == 1) lcd.print(jp("ｳｴorｼﾀ"));
+        lcd.print("v3.9 MODE>");
+        lcd.print(languageFlag == 0 ? "UP-DWN" : jp("ｳｴorｼﾀ"));
       } else if (value == 0) {
         lcd.setCursor(3, 1);
         displayString(mode, 5);  // configuration
