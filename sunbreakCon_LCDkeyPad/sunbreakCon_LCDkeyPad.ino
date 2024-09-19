@@ -2,7 +2,7 @@
  *  Nintendo Switch
  *  PlayStation 5
  *  モンハンライズサンブレイク  Ver.16.0.x
- *  プログラムセット Ver.3.9
+ *  プログラムセット Ver.3.9.1
  *
  *  DOWN-UPボタンでモードの切り替え
  *  モード0  システム設定  / System Setting
