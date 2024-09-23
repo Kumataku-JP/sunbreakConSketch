@@ -121,7 +121,7 @@ void mode3() {
       }
     }
     if (!runStop) {
-      leftStickNeutral();
+      stickNeutral(Stick::LEFT);
       lcd.setCursor(value >= 1 && value <= 4 ? 10 : 9, 0);  // 決戦場と特産品の場合とのLCD位置の調整
       lcd.print("STOP");
       lcd.setCursor(10, 1);

@@ -57,16 +57,16 @@ void oneDay() {
     switch (languageFlag) {
       case 0:                              // mm-dd-yyyy-hh-mm-AM/PM-confirm
         pushButton(Button::A);             // 日に移動
-        pushHat(Hat::UP, 40, 20);          // 日更新
+        pushHat(Hat::UP, 40, 40);          // 日更新
         pushButton(Button::A, 60, 40, 6);  // OKまで移動 OK
         break;
       case 1:                              // yyyy-mm-dd-hh-mm-confirm
         pushButton(Button::A, 40, 40, 2);  // 日に移動
-        pushHat(Hat::UP, 40, 20);          // 日更新
+        pushHat(Hat::UP, 40, 40);          // 日更新
         pushButton(Button::A, 60, 40, 4);  //O Kまで移動 OK
         break;
     }
-    delay(100);
+    delay(200);
     dayDate++;
     prg++;
   }
@@ -77,19 +77,19 @@ void oneMonth() {
   if (prg == 4) {
     switch (languageFlag) {
       case 0:                              // mm-dd-yyyy-hh-mm-AM/PM-confirm
-        pushHat(Hat::UP, 40, 20);          // 月更新
+        pushHat(Hat::UP, 40, 40);          // 月更新
         pushButton(Button::A);             // 日に移動
-        pushHat(Hat::UP, 40, 20);          // 日更新
+        pushHat(Hat::UP, 40, 40);          // 日更新
         pushButton(Button::A, 60, 40, 6);  // OKまで移動 OK
         delay(100);
         break;
       case 1:                              // yyyy-mm-dd-hh-mm-confirm
         pushButton(Button::A, 40, 40, 2);  // 日に移動
-        pushHat(Hat::UP, 40, 20);          // 日更新
-        pushHat(Hat::LEFT, 40, 20);        // 月に移動
-        pushHat(Hat::UP, 40, 20);          // 月更新
+        pushHat(Hat::UP, 40, 40);          // 日更新
+        pushHat(Hat::LEFT, 40, 40);        // 月に移動
+        pushHat(Hat::UP, 40, 40);          // 月更新
         pushButton(Button::A, 60, 40, 5);  // OKまで移動 OK
-        delay(100);
+        delay(200);
         break;
     }
     monthDate++;
@@ -103,22 +103,22 @@ void oneYear() {
   if (prg == 4) {
     switch (languageFlag) {
       case 0:                              // mm-dd-yyyy-hh-mm-AM/PM-confirm
-        pushHat(Hat::UP, 40, 20);          // 月更新
+        pushHat(Hat::UP, 40, 40);          // 月更新
         pushButton(Button::A);             // 日に移動
-        pushHat(Hat::UP, 40, 20);          // 日更新
+        pushHat(Hat::UP, 40, 40);          // 日更新
         pushButton(Button::A);             // 年に移動
-        pushHat(Hat::UP, 40, 20);          // 年更新
+        pushHat(Hat::UP, 40, 40);          // 年更新
         pushButton(Button::A, 60, 40, 5);  // OKまで移動 OK
-        delay(100);
+        delay(200);
         break;
       case 1:                              // yyyy-mm-dd-hh-mm-confirm
-        pushHat(Hat::UP, 40, 20);          // 年更新
+        pushHat(Hat::UP, 40, 40);          // 年更新
         pushButton(Button::A);             // 月に移動
-        pushHat(Hat::UP, 40, 20);          // 月更新
+        pushHat(Hat::UP, 40, 40);          // 月更新
         pushButton(Button::A);             // 日に移動
-        pushHat(Hat::UP, 40, 20);          // 日更新
+        pushHat(Hat::UP, 40, 40);          // 日更新
         pushButton(Button::A, 60, 40, 4);  // OKまで移動 OK
-        delay(100);
+        delay(200);
         break;
     }
     yearDate++;
@@ -142,24 +142,28 @@ void screenSetting() {
     prg++;
   } else if (prg == 1) {
     // 設定画面本体まで
-    pushHat(Hat::DOWN, 1680, 0);  // down
+    stickTilt(Stick::LEFT, 180, 100, 50);  // down
+    stickTilt(Stick::RIGHT, 180, 100, 1650);  // down
+    stickNeutral(Stick::LEFT);
+    pushButton(Button::A, 100, 150);
     prg++;
   } else if (prg == 2) {
     // 日付と変更まで
-    pushButton(Button::A, 100, 150);
-    pushHat(Hat::DOWN, 700, 50);  // down
-    pushButton(Button::A, 40, 200);
+    stickTilt(Stick::RIGHT, 180, 100, 600);  // down
+    stickNeutral(Stick::RIGHT);
+    pushButton(Button::A, 100, 200);
     prg++;
   } else if (prg == 3) {
     //インターネットで時間を合わせるオンオフ(時刻を現在時間にリセット)
     if (firstRun) {
       pushButton(Button::A, 100, 250);
-      pushHat(Hat::DOWN, 50, 100, 2);
       firstRun = false;  // 日付自動オン無効
-    } else {
-      // 時間設定まで
-      pushHat(Hat::DOWN, 50, 100, 2);
     }
+    // 時間設定まで
+    stickTilt(Stick::LEFT, 180, 100, 50);  // down
+    stickTilt(Stick::RIGHT, 180, 100, 100);  // down
+    stickNeutral(Stick::LEFT);
+    stickNeutral(Stick::RIGHT);
     pushButton(Button::A, 100, 200);
     prg++;
   }
@@ -172,7 +176,7 @@ void lottery() {
     pushButton(Button::HOME, 50, 800);
     // amiiboを読み込む
     pushButton(Button::A, 40, 100, 3);  // 前日の景品受取り処理
-    pushButton(Button::A, 2000);        // amiibo読み込み中
+    pushButton(Button::A, 2200);        // amiibo読み込み中
     prg++;
   } else if (prg == 6) {
     pushButton(Button::A, 40, 200, 4);  // amiiboを読み込みました,amiibo福引,このamiiboで福引をおこないますか
@@ -195,10 +199,12 @@ void screenSettingClose() {
   pushHat(Hat::LEFT, 50, 90);
   pushButton(Button::A, 60, 400);
   // 設定画面本体まで
-  pushHat(Hat::DOWN, 1680);  // down
+  stickTilt(Stick::RIGHT, 180, 100, 1680);  // down
+  stickNeutral(Stick::RIGHT);
   // 日付と変更まで
   pushButton(Button::A, 100, 100);
-  pushHat(Hat::DOWN, 700, 50);  // down
+  stickTilt(Stick::RIGHT, 180, 100, 700);  // down
+  stickNeutral(Stick::RIGHT);
   pushButton(Button::A, 40, 200);
   //インターネットで時間を合わせるオンオフ(時刻を現在時間にリセット)
   pushButton(Button::A, 50, 200);

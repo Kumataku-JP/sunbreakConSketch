@@ -106,6 +106,8 @@ void mode4() {
 
     if (!runMode) {
       if (LotteryStop == 1 || LotteryStop == 2) {
+        stickNeutral(Stick::LEFT);
+        stickNeutral(Stick::RIGHT);
         lcd.setCursor(0, 0);
         lcd.print("CLOSE>L");
         lcd.setCursor(10, 1);
@@ -162,6 +164,9 @@ void mode4() {
       repeatCount = numDate;
       setupMode = !setupMode;
       runMode = !runMode;
+      firstRun = true;
+      stickNeutral(Stick::LEFT);
+      stickNeutral(Stick::RIGHT);
       lcd.noCursor();
       lcdAmiibo();
       delay(200);
