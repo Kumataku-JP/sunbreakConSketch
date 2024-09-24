@@ -58,12 +58,14 @@ void oneDay() {
       case 0:                              // mm-dd-yyyy-hh-mm-AM/PM-confirm
         pushButton(Button::A);             // 日に移動
         pushHat(Hat::UP, 40, 40);          // 日更新
-        pushButton(Button::A, 60, 40, 6);  // OKまで移動 OK
+        pushButton(Button::A, 60, 40, 5);  // OKまで移動
+        pushButton(Button::A, 100, 100);   // OK
         break;
       case 1:                              // yyyy-mm-dd-hh-mm-confirm
         pushButton(Button::A, 40, 40, 2);  // 日に移動
         pushHat(Hat::UP, 40, 40);          // 日更新
-        pushButton(Button::A, 60, 40, 4);  //O Kまで移動 OK
+        pushButton(Button::A, 60, 40, 3);  // OKまで移動
+        pushButton(Button::A, 100, 100);   // OK
         break;
     }
     delay(200);
@@ -80,7 +82,8 @@ void oneMonth() {
         pushHat(Hat::UP, 40, 40);          // 月更新
         pushButton(Button::A);             // 日に移動
         pushHat(Hat::UP, 40, 40);          // 日更新
-        pushButton(Button::A, 60, 40, 6);  // OKまで移動 OK
+        pushButton(Button::A, 60, 40, 5);  // OKまで移動
+        pushButton(Button::A, 100, 100);   // OK
         delay(100);
         break;
       case 1:                              // yyyy-mm-dd-hh-mm-confirm
@@ -88,7 +91,8 @@ void oneMonth() {
         pushHat(Hat::UP, 40, 40);          // 日更新
         pushHat(Hat::LEFT, 40, 40);        // 月に移動
         pushHat(Hat::UP, 40, 40);          // 月更新
-        pushButton(Button::A, 60, 40, 5);  // OKまで移動 OK
+        pushButton(Button::A, 60, 40, 4);  // OKまで移動
+        pushButton(Button::A, 100, 100);   // OK
         delay(200);
         break;
     }
@@ -108,7 +112,8 @@ void oneYear() {
         pushHat(Hat::UP, 40, 40);          // 日更新
         pushButton(Button::A);             // 年に移動
         pushHat(Hat::UP, 40, 40);          // 年更新
-        pushButton(Button::A, 60, 40, 5);  // OKまで移動 OK
+        pushButton(Button::A, 60, 40, 4);  // OKまで移動
+        pushButton(Button::A, 100, 100);   // OK
         delay(200);
         break;
       case 1:                              // yyyy-mm-dd-hh-mm-confirm
@@ -117,7 +122,8 @@ void oneYear() {
         pushHat(Hat::UP, 40, 40);          // 月更新
         pushButton(Button::A);             // 日に移動
         pushHat(Hat::UP, 40, 40);          // 日更新
-        pushButton(Button::A, 60, 40, 4);  // OKまで移動 OK
+        pushButton(Button::A, 60, 40, 3);  // OKまで移動
+        pushButton(Button::A, 100, 100);   // OK
         delay(200);
         break;
     }
@@ -142,7 +148,7 @@ void screenSetting() {
     prg++;
   } else if (prg == 1) {
     // 設定画面本体まで
-    stickTilt(Stick::LEFT, 180, 100, 50);  // down
+    stickTilt(Stick::LEFT, 180, 100, 50);     // down
     stickTilt(Stick::RIGHT, 180, 100, 1650);  // down
     stickNeutral(Stick::LEFT);
     pushButton(Button::A, 100, 150);
@@ -160,7 +166,7 @@ void screenSetting() {
       firstRun = false;  // 日付自動オン無効
     }
     // 時間設定まで
-    stickTilt(Stick::LEFT, 180, 100, 50);  // down
+    stickTilt(Stick::LEFT, 180, 100, 50);    // down
     stickTilt(Stick::RIGHT, 180, 100, 100);  // down
     stickNeutral(Stick::LEFT);
     stickNeutral(Stick::RIGHT);
