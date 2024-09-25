@@ -2,7 +2,7 @@
  *  Nintendo Switch
  *  PlayStation 5
  *  モンハンライズサンブレイク  Ver.16.0.x
- *  プログラムセット Ver.3.9.2
+ *  プログラムセット Ver.3.9.3
  *
  *  DOWN-UPボタンでモードの切り替え
  *  モード0  システム設定  / System Setting
@@ -83,13 +83,16 @@ unsigned long startTimeS = 0;
 unsigned long stopTime;
 unsigned int repeatCount;
 unsigned char prg = 0;
-bool reStart;
+bool pause;
+bool reStart = true;
+bool revert = false;
 bool skipExec = false;
 bool skipSheathe = false;
 // コロンの表示制御
 unsigned long referenceTime = 0;
 unsigned long previousMillis = 0;     // 前回の時間
 const unsigned long interval = 1000;  // コロンを点滅させる間隔（ミリ秒）
+unsigned long minutes;
 bool colonVisible = false;            // コロンの表示状態
 
 // 制御
@@ -97,7 +100,6 @@ bool runMode;
 bool targetOn;
 bool setupMode = false;
 bool closeLottery = false;
-bool runStop = true;
 bool timesLeft;
 
 // カウンター制御

@@ -26,13 +26,13 @@ void mode3() {
       value = toggleValue(value, 1, 5);  // 1-5トグル
       lcd.clear();
       lcdAuto();                // LCD表示
-      if (value != 4) prg = 0;  // 4を途中でストップした時にprgを初期値に戻す
       delay(300);
     }
   }
   if (keys == btnSELECT && keysOld == btnNONE && value != 0) {
     runMode = !runMode;
     setupMode = runMode;
+    pause = !pause;
     lcd.clear();
     lcdAuto();  // LCD表示
     lcd.setCursor(11, 1);
@@ -59,42 +59,51 @@ void mode3() {
       }
       //　startTimeA startTimeB の初期化
       startTimeA = startTimeB = millis();
-      runStop = false;
+      pause = false;
     }
+    pause = false;
     switch (value) {
       case 1:  // 闘技場オート
         if (prg == 0) prg = 2;
-        lcdCruise();          // 実行中項目LCD表示
-        autoQuestCruising();  // 団子からオート
+        if (prg >= 0 && prg <= 5) {
+          lcdCruise();          // 実行中項目LCD表示
+          autoQuestCruising();  // 団子からオート
+        }
         if (prg == 6) {
           commonLcdMacro();  // LCD共通マクロ
-          autoArena();        // 闘技場
+          autoArena();       // 闘技場
         }
         break;
       case 2:  // 極泉郷オート
         if (prg == 0) prg = 2;
-        lcdCruise();          // 実行中項目LCD表示
-        autoQuestCruising();  // 団子からオート
+        if (prg >= 0 && prg <= 5) {
+          lcdCruise();          // 実行中項目LCD表示
+          autoQuestCruising();  // 団子からオート
+        }
         if (prg == 6) {
           commonLcdMacro();  // LCD共通マクロ
-          autoInfernal();     // 極泉郷
+          autoInfernal();    // 極泉郷
         }
         break;
       case 3:  // 塔の秘境オート
         if (prg == 0) prg = 2;
-        lcdCruise();          // 実行中項目LCD表示
-        autoQuestCruising();  // 団子からオート
+        if (prg >= 0 && prg <= 5) {
+          lcdCruise();          // 実行中項目LCD表示
+          autoQuestCruising();  // 団子からオート
+        }
         if (prg == 6) {
           commonLcdMacro();  // LCD共通マクロ
-          autoForlorn();      // 塔の秘境
+          autoForlorn();     // 塔の秘境
         }
         break;
-      case 4:                 // 闘技場クエスト受注から
-        lcdCruise();          // 実行中項目LCD表示
-        autoQuestCruising();  // クエスト受注からオート
+      case 4:  // 闘技場クエスト受注から
+        if (prg >= 0 && prg <= 5) {
+          lcdCruise();          // 実行中項目LCD表示
+          autoQuestCruising();  // クエスト受注からオート
+        }
         if (prg == 6) {
           commonLcdMacro();  // LCD共通マクロ
-          autoArena();        // 闘技場
+          autoArena();       // 闘技場
         }
         break;
       case 5:
@@ -108,29 +117,26 @@ void mode3() {
 
   //ストップ
   if (value != 0 && !runMode) {
-    if (!reStart) {
-      prg = 0;
-      if (value >= 1 && value <= 4) {
-        lcd.setCursor(0, 0);
-        lcd.print(value);
-        lcd.print(".");
-        displayString(value, 3);
-        lcd.print("          ");
-        lcd.setCursor(11, 1);
-        lcd.print("SRT>S");
-      }
+    if (!reStart && !revert) {
+      lcd.clear();    // 画面をクリア
+      lcdAuto();      // LCD表示
+      prg = 0;        // プログラムを初期化
+      revert = true;  // 処理が実行されたことを記録
     }
-    if (!runStop) {
+    if (reStart) {
+      revert = false;  // 60秒経過中ならフラグをリセット
+    }
+    if (pause) {
       stickNeutral(Stick::LEFT);
       lcd.setCursor(value >= 1 && value <= 4 ? 10 : 9, 0);  // 決戦場と特産品の場合とのLCD位置の調整
       lcd.print("STOP");
       lcd.setCursor(10, 1);
       lcd.print("RSRT>S");
-      setupMode = false;
       skipExec = false;
+      pause = false;
       isFirstRun = true;
-      runStop = true;
       times = 0;
+      prg = 6;
       stopTime = millis();  // ストップ時にstopTimeを計測開始
       delay(400);
     }
@@ -141,6 +147,7 @@ void mode3() {
 
 /* 共通マクロ */
 void commonLcdMacro() {
+  lcd.noBlink();
   lcdMelody();    // LCD表示旋律タイプ
   elapsedTime();  // LCD表示経過時間
   if (targetOn) target();
@@ -158,6 +165,7 @@ void lcdCruise() {
   else if (prg == 3) lcd.print("Dango..");
   else if (prg == 4) lcd.print("Loading");
   else if (prg == 5) lcd.print("Hunting");
+  if (prg >= 0 && prg <= 5) lcd.blink();
 }
 /* 旋律タイプLCD */
 void lcdMelody() {

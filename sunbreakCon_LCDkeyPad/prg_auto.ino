@@ -35,9 +35,9 @@ void repeatMove() {
 void autoArena() {
   startTime = millis();
   stickTilt(Stick::LEFT, 5, 100);  // 移動方向
-  silkbind_4();           // 抜刀共鳴音珠・震打
-  silkbind_5();           // スライドビート・鉄蟲糸響打
-  melodyType();           // 旋律
+  silkbind_4();                    // 抜刀共鳴音珠・震打
+  silkbind_5();                    // スライドビート・鉄蟲糸響打
+  melodyType();                    // 旋律
   times++;
 }
 
@@ -45,10 +45,10 @@ void autoArena() {
 void autoInfernal() {
   startTime = millis();
   stickTilt(Stick::LEFT, 30, 100);  // 移動方向
-  silkbind_4();            // 抜刀共鳴音珠・震打
-  Sheathe();               // 納刀A
-  silkbind_5();            // スライドビート・鉄蟲糸響打
-  melodyType();            // 旋律
+  silkbind_4();                     // 抜刀共鳴音珠・震打
+  Sheathe();                        // 納刀A
+  silkbind_5();                     // スライドビート・鉄蟲糸響打
+  melodyType();                     // 旋律
   times++;
 }
 
@@ -56,10 +56,10 @@ void autoInfernal() {
 void autoForlorn() {
   startTime = millis();
   stickTilt(Stick::LEFT, 25, 100);  // 移動方向
-  silkbind_4();            // 抜刀共鳴音珠・震打
-  Sheathe();               // 納刀A
-  silkbind_5();            // スライドビート・鉄蟲糸響打
-  melodyType();            // 旋律
+  silkbind_4();                     // 抜刀共鳴音珠・震打
+  Sheathe();                        // 納刀A
+  silkbind_5();                     // スライドビート・鉄蟲糸響打
+  melodyType();                     // 旋律
   times++;
 }
 /* ============================================================== */
@@ -166,6 +166,7 @@ void autoQuestCruising() {
       prg++;
       break;
   }
+  delay(200);
 }
 //観測拠点 中央広場に移動 0
 void processPlaza() {
@@ -232,20 +233,20 @@ void processArena() {
 // 極泉郷の移動 6
 void processInfernal() {
   holdButton(mappingR1);
-  stickTilt(Stick::LEFT, -45, 100, 2400);      // 虹ヒトダマドリまで移動
-  stickTilt(Stick::LEFT, 50, 100, 3000);       // 大翔蟲まで移動
+  stickTilt(Stick::LEFT, -45, 100, 2400);  // 虹ヒトダマドリまで移動
+  stickTilt(Stick::LEFT, 50, 100, 3000);   // 大翔蟲まで移動
   releaseButton(mappingR1);
-  stickTilt(Stick::LEFT, 90, 100, 500);       // 大翔蟲まで移動
-  pushButton(Button::A, 100, 50, 6);  // 大翔蟲
+  stickTilt(Stick::LEFT, 85, 100, 200);  // 大翔蟲まで移動
+  pushButton(Button::A, 100, 50, 8);     // 大翔蟲
   holdButton(mappingR1);
-  stickTilt(Stick::LEFT, 0, 100, 10000);       // モンスターまで移動
+  stickTilt(Stick::LEFT, 0, 100, 10000);  // モンスターまで移動
   releaseButton(mappingR1);
 }
 // 塔の秘境の移動 6
 void processForlorn() {
   holdButton(mappingR1);
-  stickTilt(Stick::LEFT, -10, 100, 3500);      // 虹ヒトダマドリ大翔蟲まで移動
-  pushButton(Button::A, 200, 40, 2);  // 大翔蟲
-  stickTilt(Stick::LEFT, 0, 100, 10000);       // モンスターまで移動
+  stickTilt(Stick::LEFT, -10, 100, 3500);  // 虹ヒトダマドリ大翔蟲まで移動
+  pushButton(Button::A, 200, 40, 2);       // 大翔蟲
+  stickTilt(Stick::LEFT, 0, 100, 10000);   // モンスターまで移動
   releaseButton(mappingR1);
 }
