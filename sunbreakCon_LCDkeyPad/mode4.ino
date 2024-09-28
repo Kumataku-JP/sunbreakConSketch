@@ -47,7 +47,6 @@ void mode4() {
         lcd.setCursor(3, 1);
         lcdProgress();    // 処理進行状況
         showLcdAmiibo();  // 開始時にLCDに表示するための処理
-
         lottery();        // amiibo福引 prg = 5,6で実行なので前置き
         setupModeting();  // 日付変更
         lcd.setCursor(7, 0);
@@ -115,6 +114,7 @@ void mode4() {
         closeLottery = true;
         prg = 0;
         LotteryStop = 0;
+        lcd.noBlink();
         delay(250);
       }
     }
@@ -227,15 +227,15 @@ int daysInMonth(byte month, byte year) {
 
 /* LCD制御=========================================================== */
 /* 進行中LCD */
+const char* runStrings[] = {
+  "HOME...", "System.", "Moving.", "DATE...", "Change.", "Amiibo.", "Lottery"
+};
 void lcdProgress() {
   lcd.setCursor(3, 1);
-  if (prg == 0) lcd.print("HOME...");
-  else if (prg == 1) lcd.print("System.");
-  else if (prg == 2) lcd.print("Moving.");
-  else if (prg == 3) lcd.print("DATE...");
-  else if (prg == 4) lcd.print("Change.");
-  else if (prg == 5) lcd.print("Amiibo.");
-  else if (prg == 6) lcd.print("Lottery");
+  if (prg >= 0 && prg <= 6) {
+    lcd.print(runStrings[prg]);  // 文字列を配列で管理
+    lcd.setCursor(10, 1);
+  }
 }
 /* 日付LCD表示制御 */
 void lcdSetDateAmiibo() {

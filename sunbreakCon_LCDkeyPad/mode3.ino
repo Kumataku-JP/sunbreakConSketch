@@ -25,7 +25,7 @@ void mode3() {
       value += (keys == btnRIGHT) ? 1 : -1;
       value = toggleValue(value, 1, 5);  // 1-5トグル
       lcd.clear();
-      lcdAuto();                // LCD表示
+      lcdAuto();  // LCD表示
       delay(300);
     }
   }
@@ -155,18 +155,20 @@ void commonLcdMacro() {
 
 /* LCD制御=========================================================== */
 /* 準備LCD */
+const char* autoStrings[] = {
+  "Plaza..", "Accept.", "TeaShop", "Dango..", "Loading", "Hunting"
+};
+
 void lcdCruise() {
   lcd.setCursor(2, 0);
-  displayString(value, 3);  // ArenaAuto
+  displayString(value, 3);
   lcd.setCursor(3, 1);
-  if (prg == 0) lcd.print("Plaza...");
-  else if (prg == 1) lcd.print("Accept.");
-  else if (prg == 2) lcd.print("TeaShop");
-  else if (prg == 3) lcd.print("Dango..");
-  else if (prg == 4) lcd.print("Loading");
-  else if (prg == 5) lcd.print("Hunting");
-  if (prg >= 0 && prg <= 5) lcd.blink();
+  if (prg >= 0 && prg <= 5) {
+    lcd.print(autoStrings[prg]);  // 文字列を配列で管理
+    lcd.blink();
+  }
 }
+
 /* 旋律タイプLCD */
 void lcdMelody() {
   const char* melodyStrings[][2] = {

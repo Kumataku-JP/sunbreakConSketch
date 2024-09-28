@@ -186,8 +186,8 @@ void lottery() {
     prg++;
   } else if (prg == 6) {
     pushButton(Button::A, 40, 200, 4);  // amiiboを読み込みました,amiibo福引,このamiiboで福引をおこないますか
-    lcd.setCursor(7, 0);
-    lcd.cursor();
+    lcd.setCursor(10, 1);
+    lcd.blink();
     pushButton(Button::A, 40, 100, 4);  // スキップ
     pushHat(Hat::DOWN, 50, 50);         // 受取り
     pushButton(Button::A, 40, 50);      // 閉じる（景品受取りは日付変更後
