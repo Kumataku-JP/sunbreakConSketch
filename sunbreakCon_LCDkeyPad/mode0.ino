@@ -28,7 +28,7 @@ void mode0() {
         break;
       case 2:  // ゲーム機タイプ（決定ボタン）
         consoleType = !consoleType;
-        lcd.print(consoleType ? "PlayStation 5  " : "Nintendo Switch");
+        lcd.print(consoleType ? "PS5   " : "Switch");
         break;
       case 3:  // Rボタンマッピング
         mappingR = !mappingR;
@@ -83,7 +83,7 @@ void lcdConfig() {
       lcd.print((languageFlag == 0) ? "English" : jp("ﾆﾎﾝｺﾞ"));
       break;
     case 2:
-      lcd.print((consoleType == 0) ? "Nintendo Switch" : "PlayStation 5");
+      lcd.print((consoleType == 0) ? "Switch" : "PS5");
       break;
     case 3:
       lcd.print("Button");

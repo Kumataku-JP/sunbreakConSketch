@@ -100,7 +100,7 @@ void Sheathe() {
     if (value == 2) {
       stickTilt(Stick::LEFT, 90, 100);
     }
-    pushButton(Button::A, 200, 40, 4);
+    pushButton(Button::A, 100, 40, 8);
     releaseButton(mappingR1);
     skipSheathe = skipExec = false;
   }
