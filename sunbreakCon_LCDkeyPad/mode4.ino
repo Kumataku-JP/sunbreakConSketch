@@ -1,11 +1,10 @@
-/*  モンハンライズサンブレイクamiibo福引  Ver.11.0.
- *  
+/*  
  *  概要／
  *  amiibo福引を連続して行うマクロ
  *  
  *  準備／
  *  1. Switchホーム画面  設定  本体時間を合わせる  オンのままでOK
- *  2. マクロコントローラーのシステム設定または同モード設定で日付をSwitch本体と合わせる
+ *  2. 設定で日付をSwitch本体と合わせる
  *  3. 2段目の4桁で福引回数を指定する
  *  4. 福引回数を指定ならカウンター表示、ないのなら日付表示（ストップするまで続ける）
  *  5. コントローラーにamiiboを読み込めるようにセットする（初日の福引は手動でしてもしなくてもOK）
@@ -15,22 +14,32 @@
  *  7. 終了または途中停止後、左ボタンで本体日付を自動に戻すマクロモードにしセレクトボタンで実行をする
  *     ※締めの作業をしないと他のモードに変更不可。
 */
-
 void mode4() {
-
-  keys = read_LCD_buttons(analogRead(0));
-
   /* !setupMode 選択モード*/
   if (!setupMode) {
     if (!closeLottery && (keys == btnRIGHT || keys == btnLEFT)) {
-      value += (keys == btnRIGHT) ? 1 : -1;
-      value = toggleValue(value, 1, 2);  // 1-2トグル
-      lcd.clear();                       // LCD初期化
-      lcdAmiibo();                       // LCD表示
+      int direction = (keys == btnRIGHT) ? 1 : -1;
+      value += direction;
+      if (value < 1) value = 2;
+      else if (value > 2) value = 1;
       delay(300);
+      lcd.clear();  // LCD初期化
+      lcdAmiibo();  // LCD表示
+
     } else if (closeLottery && keys == btnLEFT) {
       value = -1;   // closeLotteryがtrueの時に左ボタンを押した場合
       lcdAmiibo();  // LCD表示
+    } else if (closeLottery && keys == btnRIGHT) {
+      value = 2;               // closeLotteryがtrueの時に左ボタンを押した場合
+      lcd.clear();             // LCD初期化
+      commonLcdRow2();         // 2列目LCD0-2
+      displayString(0, mode);  // 2列目LCD3-
+      lcd.setCursor(0, 0);
+      lcd.print("CLOSE>L");
+      lcd.setCursor(10, 1);
+      lcd.print(LotteryStop == 1 ? "RSRT>S" : "   END");
+      lcd.setCursor(7, 0);
+      showLcdDate();  // 日付をLCDに表示する
     }
     /* amiibo福引 */
     if (runMode) {
@@ -40,18 +49,18 @@ void mode4() {
       if (value == 2) {
         /* LCD表示 */
         LotteryStop = 1;
+        lcd.clear();  // LCD初期化
         lcd.setCursor(0, 0);
-        displayString(value, mode);
+        displayString(value, mode);  // 1列目LCD2-
         lcd.setCursor(7, 0);
-        showLcdDate();  // 日付をLCDに表示する
-        lcd.setCursor(3, 1);
-        lcdProgress();    // 処理進行状況
+        showLcdDate();    // 日付をLCDに表示する
+        commonLcdRow2();  // 2列目LCD0-2
+        lcdProgress();    // 処理進行状況 2列目LCD3-
         showLcdAmiibo();  // 開始時にLCDに表示するための処理
         lottery();        // amiibo福引 prg = 5,6で実行なので前置き
         setupModeting();  // 日付変更
         lcd.setCursor(7, 0);
         showLcdDate();  // 日付をLCDに表示する
-
         /* 福引回数制限なしの場合 */
         if (!timesLeft) {
           lcd.setCursor(10, 1);
@@ -93,10 +102,10 @@ void mode4() {
         value = 2;
         prg = 0;
         LotteryStop = 0;
-        lcd.clear();
+        lcd.clear();  // LCD初期化
         lcdAmiibo();
         lcd.setCursor(0, 0);
-        displayString(value, mode);  // Start Fukubiki>D
+        displayString(value, mode);  // 1列目LCD2-
         lcd.setCursor(10, 1);
         lcd.print(" SRT>S");
         delay(250);
@@ -104,25 +113,25 @@ void mode4() {
     }    // runMode ここまで
 
     if (!runMode) {
-      if (LotteryStop == 1 || LotteryStop == 2) {
-        stickNeutral(Stick::LEFT);
-        stickNeutral(Stick::RIGHT);
+      if ((LotteryStop == 1 || LotteryStop == 2) && value != -1) {
+        if (prg >= 1 && prg <= 2) {
+          stickNeutral(Stick::LEFT);
+          stickNeutral(Stick::RIGHT);
+        }
         lcd.setCursor(0, 0);
         lcd.print("CLOSE>L");
         lcd.setCursor(10, 1);
         lcd.print(LotteryStop == 1 ? "RSRT>S" : "   END");
         closeLottery = true;
         prg = 0;
-        LotteryStop = 0;
         lcd.noBlink();
-        delay(250);
       }
     }
     if (keys == btnSELECT && keysOld == btnNONE && value != 0) {
       runMode = !runMode;
     }
     keysOld = keys;
-  }
+  }  // !setupModeここまで
   /* setupMode カウンター  日付  設定モード */
   if (setupMode) {
     lcd.setCursor(3, 1);
@@ -155,6 +164,7 @@ void mode4() {
 
     /* 設定終了 */
     if (keys == btnSELECT && keysOld == btnNONE && value != 0) {
+      delay(200);
       // 設定された日付を保存する
       savedDayDate = dayDate;
       savedMonthDate = monthDate;
@@ -169,10 +179,9 @@ void mode4() {
       stickNeutral(Stick::RIGHT);
       lcd.noCursor();
       lcdAmiibo();
-      delay(200);
     }
     keysOld = keys;  // 前回のキー状態を記録
-  }
+  }                  // setupModeここまで
 }
 
 /* 日付制御=========================================================== */
@@ -247,10 +256,7 @@ void lcdSetDateAmiibo() {
 }
 // のこりの周回数をディスプレイに表示
 void updateCountLottery() {
-  numDate = digitsL[0] * 1000 + digitsL[1] * 100 + digitsL[2] * 10 + digitsL[3];
-  for (int i = 0; i < 4; i++) {
-    lcd.print(digitsL[i]);
-  }
+  updateCountGeneric(numDate, digitsL, 4);  // digitsLを使って4桁の計算と表示
 }
 /* LCD制御=========================================================== */
 /* のこり福引回数LCD表示 */
@@ -274,16 +280,17 @@ void showLcdAmiibo() {
 /* LCD表示 */
 void lcdAmiibo() {
   // 1列目LCD
-  lcd.clear();  // LCD初期化
-  lcd.setCursor(0, 0);
-  displayString(value, mode);
+  lcd.clear();                 // LCD初期化
+  commonLcdRow1();             // 1列目LCD0-1
+  displayString(value, mode);  // 1列目LCD2-
   // 2列目LCD
-  commonLcdRow2();
+  commonLcdRow2();         // 2列目LCD0-2
+  displayString(0, mode);  // 2列目LCD3-
   if (value == -1) {
     lcd.setCursor(0, 0);
-    lcd.print("CLOSE>SELECT    ");
+    lcd.print("CLOSE>SELECT  ");
     lcd.setCursor(3, 1);
-    lcd.print((languageFlag == 0) ? "SysDateRest  " : jp("ｼｽﾃﾑｶﾚﾝﾀﾞｼｮｷｶ"));
+    lcd.print((languageFlag == 0) ? "SysDateRest" : jp("ｼｽﾃﾑｶﾚﾝﾀﾞｼｮｷｶ"));
   }
   if (value == 1) {
     lcd.setCursor(7, 0);
@@ -303,7 +310,7 @@ void lcdAmiibo() {
       lcd.setCursor(7, 0);
       showLcdDate();  // 日付をLCDに表示する
     }
-    lcd.setCursor(10, 1);
-    lcd.print(" SRT>S");
+    lcd.setCursor(11, 1);
+    lcd.print("SRT>S");
   }
 }

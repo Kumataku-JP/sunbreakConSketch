@@ -1,5 +1,4 @@
-/*  モンハンライズサンブレイク  マカ錬金
- *  
+/*  
  *  概要／
  *  マカ錬金を10連するマクロ
  *  10回抽選して受取り画面で停止
@@ -14,30 +13,32 @@
  *    初期値  11/00  （1ページ目の1個目を指定）
  *    2つ目の素材指定なしで1つ目のみでマカ錬金可能
  *
- *  2.覇気     使用素材を6で指定セットしカーソル初期位置を「護石を受け取る」に置き実行
+ *  2.覇気     使用素材を1.設定で指定しカーソル初期位置を「護石を受け取る」に置き実行
  *  
  *  3.円環    「傀異マカ錬金・円環」を選択し、錬金したいスキル選択し、
  *            素材にしたいページにカーソルを置き実行
  *            ※ただし、最下段と装備している護石がある場合には最上段列にカーソルを置かない
  *  
  *
- *  4.装備売却  1ページ(50装備)分を売却
- *            画面が高速にチラつくので癲癇等に注意
+ *  4.装備売却  1ページ(50装備)分を売却し前のページ移動して終了
+ *             装備BOXに貯まった護石を1.で連続錬金指定した数と同ページ分を売却可能。
+ *             最終(護石50コうまっている)ページから前のページに自動売却して行くことで、最初のページ送りになりロックしていない武器等を誤って売却するのを防止
+ *             ※画面が高速にチラつくので癲癇等に注意
  *
 */
 
 void mode2() {
-
-  keys = read_LCD_buttons(analogRead(0));
   /*  マカ錬金  */
   //マカ錬金選択
   if (!setupMode) {
     if (keys == btnRIGHT || keys == btnLEFT) {
-      value += (keys == btnRIGHT) ? 1 : -1;
-      value = toggleValue(value, 1, 4);  // 1-4トグル
-      lcd.clear();
-      lcdMelding();  // LCD表示
+      int direction = (keys == btnRIGHT) ? 1 : -1;
+      value += direction;
+      if (value < 1) value = 4;
+      else if (value > 4) value = 1;
       delay(300);
+      lcd.clear();   // LCD初期化
+      lcdMelding();  // LCD表示
     }
 
     if (keys == btnSELECT && keysOld == btnNONE && value != 0) {
@@ -56,11 +57,13 @@ void mode2() {
           // 周回なし
           if (!repeatLaps) {
             meldingStop = 1;
-            lcd.clear();
-            commonLcdRow1();  // 1列目LCD
-            commonLcdRow2();  // 2列目LCD
+            lcd.clear();                 // LCD初期化
+            commonLcdRow1();             // 1列目LCD0-1
+            displayString(value, mode);  // 1列目LCD2-
             lcd.setCursor(10, 0);
             lcd.print("Run");
+            commonLcdRow2();         // 2列目LCD0-2
+            displayString(0, mode);  // 2列目LCD3-
             lcd.setCursor(10, 1);
             lcd.print(" STP>S");
             meldingVigor();
@@ -68,15 +71,16 @@ void mode2() {
           // 周回あり
           else if (repeatLaps) {
             meldingStop = 1;
-            lcd.clear();
-            commonLcdRow1();  // 1列目LCD
-            commonLcdRow2();  // 2列目LCD
-            lcd.noCursor();
+            lcd.clear();                 // LCD初期化
+            commonLcdRow1();             // 1列目LCD0-1
+            displayString(value, mode);  // 1列目LCD2-
             lcd.setCursor(9, 0);
             lcd.print("S");
             showLcdCountMelding(repeatCount);  // カウントLCD表示
             lcd.setCursor(12, 0);
             lcd.print("R");
+            commonLcdRow2();         // 2列目LCD0-2
+            displayString(0, mode);  // 2列目LCD3-
             lcd.setCursor(10, 1);
             lcd.print(" STP>S");
             meldingVigor();
@@ -138,10 +142,6 @@ void mode2() {
     if (!runMode) {
       if (meldingStop != 0) {
         switch (value) {
-          case 1:
-            break;
-          case 2:
-            break;
           case 3:
             lcdMelding();  //LCD表示
             lcd.setCursor(10, 0);
@@ -149,8 +149,6 @@ void mode2() {
             times = 0;
             delay(500);
             meldingStop = 0;
-            break;
-          case 4:
             break;
         }
       }
@@ -200,8 +198,10 @@ void mode2() {
   /* 素材複数選択設定*/
   if (setupMode) {
     if ((keys == btnRIGHT || keys == btnLEFT) && keysOld == btnNONE) {
-      curPos += (keys == btnRIGHT) ? 1 : -1;
-      curPos = toggleCurPos(curPos, 1, 6);  // 1-6トグル
+      int direction = (keys == btnRIGHT) ? 1 : -1;
+      curPos += direction;
+      if (curPos < 1) curPos = 6;
+      else if (curPos > 6) curPos = 1;
     }
     if (keys == btnUP || keys == btnDOWN) {
       int increment = (keys == btnUP) ? 1 : -1;
@@ -215,26 +215,22 @@ void mode2() {
         /* 周回数設定 */
         case 5:
         case 6:
-          digitsM[curPos - 5] = (digitsM[curPos - 5] + increment + 10) % 10;
-          delay(100);
+          int &digit = digitsM[curPos - 5];  // curPos - 5を一度だけ計算
+          digit = (digit + increment + 10) % 10;
           break;
       }
       /* 使用素材数 */
       if (matl) {
         *matl += increment;
-        if (*matl > ((*matl == page_1 || *matl == page_2) ? 9 : (*matl == line_1) ? 7
-                                                                                  : 7)) {
-          *matl = ((*matl == page_1) ? 1 : (*matl == page_2) ? 0
-                                         : (*matl == line_1) ? 1
-                                                             : 0);
-        }
-        if (*matl == line_1 && *matl < 1) {
-          *matl = 7;
-        } else if (*matl < ((*matl == page_1) ? 1 : (*matl == page_2) ? 0
-                                                  : (*matl == line_1) ? 1
-                                                                      : 0)) {
-          *matl = ((*matl == page_1 || *matl == page_2) ? 9 : (*matl == line_1) ? 7
-                                                                                : 7);
+        // line_1の処理を個別に扱う
+        if (matl == &line_1) {
+          if (*matl > 7) *matl = 1;       // 7より大きくなったら1に戻す
+          else if (*matl < 1) *matl = 7;  // 1より小さくなったら7に戻す
+        } else {
+          char maxVal = (*matl == page_1 || *matl == page_2) ? 9 : 7;
+          char minVal = (*matl == page_1 || *matl == line_1) ? 1 : 0;
+          if (*matl > maxVal) *matl = minVal;  // 上限チェック
+          if (*matl < minVal) *matl = maxVal;  // 下限チェック
         }
       }
       delay(100);
@@ -269,43 +265,37 @@ void mode2() {
 /* LCD制御=========================================================== */
 /* 素材設定LCD表示 */
 void lcdSetMaterial() {
-  char text[2];
-  sprintf(text, "%01d", page_1);
-  lcd.print(text);
-  sprintf(text, "%01d", line_1);
-  lcd.print(text);
-  lcd.print("/");
-  sprintf(text, "%01d", page_2);
-  lcd.print(text);
-  sprintf(text, "%01d", line_2);
-  lcd.print(text);
-  cursorPosition();
+  lcd.print((int)page_1);  // 数値を直接表示
+  lcd.print((int)line_1);  // 数値を直接表示
+  lcd.print("/");          // 区切り文字を表示
+  lcd.print((int)page_2);  // 数値を直接表示
+  lcd.print((int)line_2);  // 数値を直接表示
+  cursorPosition();        // カーソル位置を更新
 }
 
-// のこりマカ錬金周回数をディスプレイに表示
+/* のこりマカ錬金周回数をディスプレイに表示 */
 void updateCountMelding() {
-  numDate = digitsM[0] * 10 + digitsM[1];
-  for (int i = 0; i < 2; i++) {
-    lcd.print(digitsM[(int)i]);
-  }
+  updateCountGeneric(numDate, digitsM, 2);
 }
+
 /* のこりマカ回数LCD表示 */
 void showLcdCountMelding(int count) {
-  char text[3];
-  sprintf(text, "%02d", count);
-  lcd.print(text);
+  if (count < 10) lcd.print("0");  // 1桁の場合は先頭に'0'を追加
+  lcd.print(count);                // countの値をそのまま表示
 }
 
 /* LCD表示 */
 void lcdMelding() {
-  commonLcdRow1();  // 1列目LCD
-  commonLcdRow2();  // 2列目LCD
+  commonLcdRow1();             // 1列目LCD0-1
+  displayString(value, mode);  // 1列目LCD2-
+  commonLcdRow2();             // 2列目LCD0-2
+  displayString(0, mode);      // 2列目LCD3-
   lcd.setCursor(10, 1);
   if (value >= 1 && value <= 3) lcd.print(" SRT>S");
   if (value == 1) {
     lcd.setCursor(11, 0);
     lcd.print("> T");
-    for (int i = 0; i < 2; i++) lcd.print(digitsM[(int)i]);
+    updateCountMelding();
     lcd.setCursor(10, 1);
     lcd.print("C");
     lcdSetMaterial();

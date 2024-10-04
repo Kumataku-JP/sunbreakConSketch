@@ -6,44 +6,37 @@
 
 void mode0() {
 
-  keys = read_LCD_buttons(analogRead(0));
   /*  初期値設定  */
   //設定する項目の表示
   if (keys == btnRIGHT || keys == btnLEFT) {
-    value += (keys == btnRIGHT) ? 1 : -1;
-    value = toggleValue(value, 1, 4);  // 1-4トグル
-
+    int direction = (keys == btnRIGHT) ? 1 : -1;
+    value += direction;
+    if (value < 1) value = 4;
+    else if (value > 4) value = 1;
+    delay(300);
     initialLcd = true;  // 実行後にフラグをセット
     lcd.clear();        // LCD初期化
     lcdConfig();        // LCD表示
-    delay(300);
   }
-
-  if (keys == btnSELECT && keysOld == btnNONE) {
+  if (keys == btnSELECT && keysOld == btnNONE && value != 0) {
+    lcd.clear();  // LCD初期化
     lcd.setCursor(0, 1);
     switch (value) {
       case 1:  // 言語選択
         languageFlag = !languageFlag;
-        lcd.print(languageFlag ? jp("ﾆﾎﾝｺﾞ  ") : "English");
         break;
       case 2:  // ゲーム機タイプ（決定ボタン）
         consoleType = !consoleType;
-        lcd.print(consoleType ? "PS5   " : "Switch");
+        //
         break;
       case 3:  // Rボタンマッピング
         mappingR = !mappingR;
-        lcd.print("Button");
-        if (consoleType == 0) lcd.print(mappingR ? " R to ZR  " : " R Default");
-        else lcd.print(mappingR ? " R1 to R2 " : "R1 Default");
         break;
       case 4:
         eepromUpdate();
         break;
-        /*case 5:  // Arduino接続
-        lcd.print("Connectting...");
-        connectUp();
-        break;*/
     }
+    lcdConfig();
     delay(250);
   }
   keysOld = keys;  // 前回のキー状態を記録
@@ -57,14 +50,15 @@ void eepromUpdate() {
   for (size_t i = 0; i < dataSize; i++) {
     EEPROM.update(i, data[i]);
   }
-  lcd.clear();
+  lcd.clear();  // LCD初期化
   lcd.setCursor(0, 1);
   lcd.print("Update");
   delay(1000);
   value = 0;
   lcd.setCursor(0, 0);
-  lcdSelect();
-  commonLcdRow2();                                                       // 2列目LCD表示
+  lcdSelect();                                                           // value = 0 1列目LCD0-
+  commonLcdRow2();                                                       // 2列目LCD0-2
+  displayString(0, mode);                                                // 2列目LCD3-
   confirmButton = (consoleType == 0) ? Button::A : Button::B;            // Switch
   cancelButton = (consoleType == 0) ? Button::B : Button::A;             // PS5
   minusButton = (consoleType == 0) ? Button::MINUS : Button::CAPTURE;    // Switch
@@ -76,25 +70,22 @@ void eepromUpdate() {
 /* LCD制御=========================================================== */
 /* LCD表示 */
 void lcdConfig() {
-  commonLcdRow1();      // 1列目LCD
-  lcd.setCursor(0, 1);  // 2列目LCD
+  commonLcdRow1();             // 1列目LCD0-1
+  displayString(value, mode);  // 1列目LCD2-
+  lcd.setCursor(0, 1);         // 2列目LCD
   switch (value) {
     case 1:
-      lcd.print((languageFlag == 0) ? "English" : jp("ﾆﾎﾝｺﾞ"));
+      lcd.print(languageFlag ? jp("ﾆﾎﾝｺﾞ") : "English");
       break;
     case 2:
-      lcd.print((consoleType == 0) ? "Switch" : "PS5");
+      lcd.print(consoleType ? "PS5" : "Switch");
       break;
     case 3:
-      lcd.print("Button");
-      if (consoleType == 0) lcd.print((mappingR == 0) ? " R Default" : " R to ZR");
-      else lcd.print((mappingR == 0) ? "R1 Default" : "R1 to R2");
+      if (consoleType == 0) lcd.print(mappingR ? "R to ZR" : "R Default");
+      else lcd.print(mappingR ? "R1 to R2" : "R1 Default");
       break;
     case 4:
       lcd.print("UPDATE>SELECT");
-      break;
-    case 5:
-      lcd.print("CONNECT>SELECT");
       break;
   }
 }

@@ -1,9 +1,8 @@
-/*  モンハンライズサンブレイクamiibo福引  Ver.11.0.
- *
- *  amiibo福引を連続して行うマクロ
- *
+/* 
+ * amiibo福引
 */
 
+/* カレンダー */
 void setupModeting() {
   /* 閏年 */
   switch (yearDate % 4) {
@@ -16,8 +15,6 @@ void setupModeting() {
       leap = 28;
       break;
   }
-
-  /* カレンダー */
   switch (monthDate) {
     //1.3.5.7.8.10月
     case 1:

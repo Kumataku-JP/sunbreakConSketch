@@ -30,40 +30,20 @@ void repeatMove() {
   }
 }
 
-/* 闘技場自動 狩猟笛================================================ */
-/* 闘技場 */
-void autoArena() {
+/* 決戦場自動 狩猟笛================================================ */
+void autoArea() {
   startTime = millis();
-  stickTilt(Stick::LEFT, 5, 100);  // 移動方向
-  silkbind_4();                    // 抜刀共鳴音珠・震打
-  silkbind_5();                    // スライドビート・鉄蟲糸響打
-  melodyType();                    // 旋律
+  if (area == 0) stickTilt(Stick::LEFT, 5, 100);   // 移動方向
+  if (area == 1) stickTilt(Stick::LEFT, 30, 100);  // 移動方向
+  if (area == 2) stickTilt(Stick::LEFT, 25, 100);  // 移動方向
+  silkbind_4();                                    // 抜刀共鳴音珠・震打
+  if (area != 0) Sheathe();                        // 納刀A
+  silkbind_5();                                    // スライドビート・鉄蟲糸響打
+  melodyType();                                    // 旋律
   times++;
 }
 
-/* 極泉郷 */
-void autoInfernal() {
-  startTime = millis();
-  stickTilt(Stick::LEFT, 30, 100);  // 移動方向
-  silkbind_4();                     // 抜刀共鳴音珠・震打
-  Sheathe();                        // 納刀A
-  silkbind_5();                     // スライドビート・鉄蟲糸響打
-  melodyType();                     // 旋律
-  times++;
-}
-
-/* 塔の秘境 */
-void autoForlorn() {
-  startTime = millis();
-  stickTilt(Stick::LEFT, 25, 100);  // 移動方向
-  silkbind_4();                     // 抜刀共鳴音珠・震打
-  Sheathe();                        // 納刀A
-  silkbind_5();                     // スライドビート・鉄蟲糸響打
-  melodyType();                     // 旋律
-  times++;
-}
 /* ============================================================== */
-
 // 共鳴音珠・震打
 void silkbind_4() {
   if (isFirstRun) {
@@ -97,7 +77,7 @@ void Sheathe() {
     startTimeB = startTime;
     delay(500);
     holdButton(mappingR1, 2500);
-    if (value == 2) {
+    if (area == 1) {
       stickTilt(Stick::LEFT, 90, 100);
     }
     pushButton(Button::A, 100, 40, 8);
@@ -114,7 +94,7 @@ void melodyType() {
         pushButton(Button::X, 50, 800);
         break;
       case 1:  // A旋律
-        pushButton(mappingR2, 100, 50, 2);
+        pushButton(mappingR2, 80, 50, 2);
         pushButton(Button::A, 50, 800);
         break;
       case 2:  // XA旋律
@@ -133,38 +113,19 @@ void target() {
     pushButton(Button::RCLICK);
   }
 }
-
 /* ============================================================== */
 /* クエスト準備開始まで */
 void autoQuestCruising() {
-  switch (prg) {
-    case 0:
-      processPlaza();
-      prg++;
-      break;
-    case 1:
-      processAccept();
-      prg++;
-      break;
-    case 2:
-      processTeaShop();
-      prg++;
-      break;
-    case 3:
-      processDango();
-      prg++;
-      break;
-    case 4:
-      processLoading();
-      prg++;
-      break;
-    case 5:
-      processStartQuest();
-      if (value == 1 || value == 4) processArena();
-      if (value == 2) processInfernal();
-      if (value == 3) processForlorn();
-      prg++;
-      break;
+  if (prg == 0) processPlaza();
+  else if (prg == 1) processAccept();
+  else if (prg == 2) processTeaShop();
+  else if (prg == 3) processDango();
+  else if (prg == 4) processLoading();
+  else if (prg == 5) {
+    processStartQuest();
+    if (area == 0) processArena();
+    if (area == 1) processInfernal();
+    if (area == 2) processForlorn();
   }
   delay(200);
 }
@@ -174,6 +135,7 @@ void processPlaza() {
   pushButton(confirmButton, 100, 500);
   stickTilt(Stick::LEFT, 30, 100, 1200);  // チッチェまで移動
   stickNeutral(Stick::LEFT);
+  prg++;
 }
 //クエスト選択 1
 void processAccept() {
@@ -184,6 +146,7 @@ void processAccept() {
   pushHat(Hat::DOWN, 50, 50, 2);         // ヒノエ
   pushButton(confirmButton, 50, 50, 2);  // 盟友選択
   delay(2000);
+  prg++;
 }
 //茶屋前に移動 2
 void processTeaShop() {
@@ -192,6 +155,7 @@ void processTeaShop() {
   pushButton(confirmButton, 100, 500);
   stickTilt(Stick::LEFT, -20, 100, 1000);
   stickNeutral(Stick::LEFT);
+  prg++;
 }
 //だんご選択 3
 void processDango() {
@@ -202,31 +166,36 @@ void processDango() {
   pushButton(confirmButton, 100);
   pushButton(confirmButton, 100, 3000);
   pushButton(cancelButton, 50, 5000);
+  prg++;
+}
+// 出発、ロード時間 4
+void processLoading() {
   pushButton(Button::R, 100);
   pushButton(confirmButton);
-}
-// ロード時間 4
-void processLoading() {
   if (consoleType == 0) {
-    delay(20000);  // Switchロード時間
+    delay(22000);  // Switchロード時間
   } else if (consoleType == 1) {
-    delay(5000);  // PS5ロード時間
+    delay(6000);  // PS5ロード時間
   }
+  prg++;
 }
 // クエスト開始時挙動 5
 void processStartQuest() {
-  holdButton(Button::ZL, 200);  // 早替え
-  holdButton(Button::X);
-  holdButton(Button::A, 200);
-  releaseButton(Button::ZL);
-  releaseButton(Button::X);
-  releaseButton(Button::A, 200);
+  if (scroll == 0) {
+    holdButton(Button::ZL, 200);  // 疾替え
+    holdButton(Button::X);
+    holdButton(Button::A, 200);
+    releaseButton(Button::ZL);
+    releaseButton(Button::X);
+    releaseButton(Button::A, 200);
+  }
   pushButton(Button::RCLICK);  // ターゲットオン
+  prg++;
 }
 // 闘技場の移動 6
 void processArena() {
   holdButton(mappingR1);
-  stickTilt(Stick::LEFT, 20, 100, 1500);  // 虹ヒトダマドリ移動
+  stickTilt(Stick::LEFT, 15, 100, 1500);  // 虹ヒトダマドリ移動
   stickTilt(Stick::LEFT, 0, 100, 10000);  // モンスターまで移動
   releaseButton(mappingR1);
 }
@@ -247,6 +216,6 @@ void processForlorn() {
   holdButton(mappingR1);
   stickTilt(Stick::LEFT, -10, 100, 3500);  // 虹ヒトダマドリ大翔蟲まで移動
   pushButton(Button::A, 200, 40, 2);       // 大翔蟲
-  stickTilt(Stick::LEFT, 0, 100, 10000);   // モンスターまで移動
+  stickTilt(Stick::LEFT, 0, 100, 13000);   // モンスターまで移動
   releaseButton(mappingR1);
 }
