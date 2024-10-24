@@ -25,7 +25,6 @@ void mode4() {
       delay(300);
       lcd.clear();  // LCD初期化
       lcdAmiibo();  // LCD表示
-
     } else if (closeLottery && keys == btnLEFT) {
       value = -1;   // closeLotteryがtrueの時に左ボタンを押した場合
       lcdAmiibo();  // LCD表示
@@ -217,7 +216,7 @@ void dateSet() {
       if (dayDate > daysInCurrentMonth) dayDate = 1;
     }
   }
-  cursorPosition();
+  cursorPosition();  // カーソル表示位置の制御
 }
 /* 月ごとの日数を返す関数 */
 int daysInMonth(byte month, byte year) {
@@ -252,7 +251,7 @@ void lcdSetDateAmiibo() {
   showLcdDate();  // 日付をLCDに表示する
   lcd.setCursor(12, 1);
   updateCountLottery();
-  cursorPosition();
+  cursorPosition();  // カーソル表示位置の制御
 }
 // のこりの周回数をディスプレイに表示
 void updateCountLottery() {
@@ -277,7 +276,7 @@ void showLcdAmiibo() {
     showLcdCountLottery(repeatCount);  // カウントをLCDに表示する
   }
 }
-/* LCD表示 */
+/* LCD初期表示 */
 void lcdAmiibo() {
   // 1列目LCD
   lcd.clear();                 // LCD初期化

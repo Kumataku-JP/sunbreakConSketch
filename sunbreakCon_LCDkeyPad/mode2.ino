@@ -47,150 +47,116 @@ void mode2() {
     keysOld = keys;
 
     if (runMode) {
-      switch (value) {
-        /* 素材複数選択設定 */
-        case 1:
-          setupMode = true;
-          break;
-          /* 神気マカ錬金 */
-        case 2:
+      if (value == 1) {
+        // 素材複数選択設定
+        setupMode = true;
+      } else if (value == 2) {
+        // 神気マカ錬金
+        meldingStop = 1;
+        lcd.clear();                 // LCD初期化
+        commonLcdRow1();             // 1列目LCD0-1
+        displayString(value, mode);  // 1列目LCD2-
+        commonLcdRow2();             // 2列目LCD0-2
+        displayString(0, mode);      // 2列目LCD3-
+        lcd.setCursor(10, 1);
+        lcd.print(" STP>S");
+        if (!repeatLaps) {
           // 周回なし
-          if (!repeatLaps) {
-            meldingStop = 1;
-            lcd.clear();                 // LCD初期化
-            commonLcdRow1();             // 1列目LCD0-1
-            displayString(value, mode);  // 1列目LCD2-
-            lcd.setCursor(10, 0);
-            lcd.print("Run");
-            commonLcdRow2();         // 2列目LCD0-2
-            displayString(0, mode);  // 2列目LCD3-
-            lcd.setCursor(10, 1);
-            lcd.print(" STP>S");
-            meldingVigor();
-          }
+          lcd.setCursor(10, 0);
+          lcd.print("Run");
+          meldingVigor();
+        } else if (repeatLaps) {
           // 周回あり
-          else if (repeatLaps) {
-            meldingStop = 1;
-            lcd.clear();                 // LCD初期化
-            commonLcdRow1();             // 1列目LCD0-1
-            displayString(value, mode);  // 1列目LCD2-
-            lcd.setCursor(9, 0);
-            lcd.print("S");
-            showLcdCountMelding(repeatCount);  // カウントLCD表示
-            lcd.setCursor(12, 0);
-            lcd.print("R");
-            commonLcdRow2();         // 2列目LCD0-2
-            displayString(0, mode);  // 2列目LCD3-
-            lcd.setCursor(10, 1);
-            lcd.print(" STP>S");
-            meldingVigor();
-            if (times % 10 == 0) {
-              repeatCount--;  // カウントをデクリメント
-              times = 0;
-            }
-            if (repeatCount == 0) {
-              meldingStop = 3;
-              repeatCount = numDate;
-              runMode = false;
-            }
+          lcd.setCursor(9, 0);
+          lcd.print("S");
+          showLcdCountMelding(repeatCount);  // カウントLCD表示
+          lcd.setCursor(12, 0);
+          lcd.print("R");
+          meldingVigor();
+          if (times % 10 == 0) {
+            repeatCount--;  // カウントをデクリメント
+            times = 0;
           }
-          break;
-          /* 円環マカ錬金 */
-        case 3:
+          if (repeatCount == 0) {
+            meldingStop = 3;
+            repeatCount = numDate;
+            runMode = false;
+          }
+        }
+      } else if (value == 3) {
+        // 円環マカ錬金
+        meldingStop = 1;
+        lcd.setCursor(10, 0);
+        lcd.print("Run");
+        lcd.setCursor(10, 1);
+        lcd.print(" STP>S");
+        meldingCyclus();
+      } else if (value == 4) {
+        // 装備売却
+        if (!repeatLaps) {
+          // 売却周回なし
           meldingStop = 1;
           lcd.setCursor(10, 0);
           lcd.print("Run");
           lcd.setCursor(10, 1);
           lcd.print(" STP>S");
-          meldingCyclus();
-          break;
-          /* 装備売却 */
-        case 4:
-          // 売却周回なし
-          if (!repeatLaps) {
-            meldingStop = 1;
-            lcd.setCursor(10, 0);
-            lcd.print("Run");
-            lcd.setCursor(10, 1);
-            lcd.print(" STP>S");
-            sellEquipment();  // 装備売却
-          }
+          sellEquipment();  // 装備売却
+        } else if (repeatLaps) {
           // 売却周回あり
-          else if (repeatLaps) {
-            meldingStop = 1;
-            lcd.noCursor();
-            lcd.setCursor(10, 0);
-            lcd.print("Run ");
-            showLcdCountMelding(repeatCount);  // カウントLCD表示
-            lcd.setCursor(10, 1);
-            lcd.print(" STP>S");
-            sellEquipment();  // 装備売却
-            if (times % 50 == 0) {
-              repeatCount--;  // カウントをデクリメント
-              times = 0;
-            }
-            if (repeatCount == 0) {
-              meldingStop = 3;
-              repeatCount = numDate;
-              runMode = false;
-            }
+          meldingStop = 1;
+          lcd.noCursor();
+          lcd.setCursor(10, 0);
+          lcd.print("Run ");
+          showLcdCountMelding(repeatCount);  // カウントLCD表示
+          lcd.setCursor(10, 1);
+          lcd.print(" STP>S");
+          sellEquipment();  // 装備売却
+          if (times % 50 == 0) {
+            repeatCount--;  // カウントをデクリメント
+            times = 0;
           }
-          break;
+          if (repeatCount == 0) {
+            meldingStop = 3;
+            repeatCount = numDate;
+            runMode = false;
+          }
+        }
       }
     }
     /* ストップ後のLCD表示 */
     if (!runMode) {
-      if (meldingStop != 0) {
-        switch (value) {
-          case 3:
-            lcdMelding();  //LCD表示
-            lcd.setCursor(10, 0);
-            lcd.print("End");
-            times = 0;
-            delay(500);
-            meldingStop = 0;
-            break;
-        }
-      }
-      switch (meldingStop) {
-        case 0:
-          break;
-        /* 中断 */
-        case 1:
-          lcd.setCursor(9, 0);
-          lcd.print(" STP");
-          lcd.setCursor(10, 1);
-          lcd.print("RSRT>S");
-          times = 0;
-          meldingStop = 0;
-          runMode = false;
-          delay(500);
-          break;
-        /* マカ錬金終了 */
-        case 2:
-          lcd.setCursor(10, 0);
-          lcd.print("End");
-          lcd.setCursor(10, 1);
-          lcd.print(" SRT>S");
-          times = 0;
-          meldingStop = 0;
-          runMode = false;
-          delay(500);
-          break;
-        /* 周回終了 */
-        case 3:
-          lcd.setCursor(9, 0);
-          lcd.print(" End");
-          lcd.setCursor(10, 1);
-          lcd.print(" SRT>S");
-          times = 0;
-          meldingStop = 0;
-          runMode = false;
-          delay(500);
-          break;
-        case 4:
-          runMode = false;
-          break;
+      if (meldingStop == 1) {
+        // 中断
+        delay(500);
+        lcd.setCursor(9, 0);
+        lcd.print(" STP");
+        lcd.setCursor(10, 1);
+        lcd.print("RSRT>S");
+        times = 0;
+        meldingStop = 0;
+        runMode = false;
+      } else if (meldingStop == 2) {
+        // マカ錬金終了
+        delay(500);
+        lcd.setCursor(10, 0);
+        lcd.print("End");
+        lcd.setCursor(10, 1);
+        lcd.print(" SRT>S");
+        times = 0;
+        meldingStop = 0;
+        runMode = false;
+      } else if (meldingStop == 3) {
+        // 周回終了
+        delay(500);
+        lcd.setCursor(9, 0);
+        lcd.print(" End");
+        lcd.setCursor(10, 1);
+        lcd.print(" SRT>S");
+        times = 0;
+        meldingStop = 0;
+        runMode = false;
+      } else if (meldingStop == 4) {
+        runMode = false;
       }
     }
   }  //  !setupModeここまで
@@ -270,7 +236,7 @@ void lcdSetMaterial() {
   lcd.print("/");          // 区切り文字を表示
   lcd.print((int)page_2);  // 数値を直接表示
   lcd.print((int)line_2);  // 数値を直接表示
-  cursorPosition();        // カーソル位置を更新
+  cursorPosition();        // カーソル表示位置の制御
 }
 
 /* のこりマカ錬金周回数をディスプレイに表示 */
@@ -284,7 +250,7 @@ void showLcdCountMelding(int count) {
   lcd.print(count);                // countの値をそのまま表示
 }
 
-/* LCD表示 */
+/* LCD初期表示 */
 void lcdMelding() {
   commonLcdRow1();             // 1列目LCD0-1
   displayString(value, mode);  // 1列目LCD2-

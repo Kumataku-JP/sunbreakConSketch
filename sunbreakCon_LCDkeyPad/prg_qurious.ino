@@ -1,7 +1,7 @@
 /* 
  * 傀異錬成
  */
- 
+
 // 傀異錬成センタク
 void choiceQurious() {
   pushButton(confirmButton, 60, 200);  // 傀異強化の種類を選択
@@ -16,10 +16,10 @@ void choiceCurrent() {
 
 /*  使用琥珀  */
 void choiceEssence() {
-if (ess == 1) pushHat(Hat::DOWN);  // 精気琥珀・上まで
-if (ess == 2) pushHat(Hat::DOWN, 40, 40, 2);  // 精気琥珀・尖まで
-if (ess == 3) pushHat(Hat::DOWN, 40, 40, 3);  // 精気琥珀・王まで
-if (ess == 4) pushHat(Hat::UP, 40, 40, 2);  // 精気琥珀・真まで
+  if (ess == 1) pushHat(Hat::DOWN);             // 精気琥珀・上まで
+  if (ess == 2) pushHat(Hat::DOWN, 40, 40, 2);  // 精気琥珀・尖まで
+  if (ess == 3) pushHat(Hat::DOWN, 40, 40, 3);  // 精気琥珀・王まで
+  if (ess == 4) pushHat(Hat::UP, 40, 40, 2);    // 精気琥珀・真まで
 }
 void runQurious() {
   pushButton(confirmButton);           // 精気琥珀選択

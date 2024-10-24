@@ -53,20 +53,10 @@ void mode3() {
   if (setupMode && !runMode && value != 0) {
     /* 設定終了 */
     lcd.setCursor(3, 1);
-    switch (setPos) {
-      case 0:
-        lcdArea();  // LCD表示
-        break;
-      case 1:
-        lcdMelody();  // LCD表示
-        break;
-      case 2:
-        lcdScroll();  // LCD表示
-        break;
-      case 3:
-        lcdPoint();  // LCD表示
-        break;
-    }
+    if (setPos == 0) lcdArea();         // LCD表示
+    else if (setPos == 1) lcdMelody();  // LCD表示
+    else if (setPos == 2) lcdScroll();  // LCD表示
+    else if (setPos == 3) lcdPoint();   // LCD表示
     /* 各設定 */
     if (keys == btnUP || keys == btnDOWN) {
       int increment = (keys == btnUP) ? 1 : -1;
@@ -80,44 +70,37 @@ void mode3() {
       delay(300);
       lcd.clear();  // LCD初期化
       lcd.setCursor(3, 1);
-      switch (setPos) {
-        case 0:
-          areaPick += (keys == btnRIGHT) ? 1 : -1;  // areaPickを増減
-          if (areaPick > 2) areaPick = 0;           // 0-2トグル
-          else if (areaPick < 0) areaPick = 2;
-          area = areaPick;  // area に反映
-          lcdArea();        // LCD表示
-          break;
-        case 1:
-          melodyPick += (keys == btnRIGHT) ? 1 : -1;  // melodyPickを増減
-          if (melodyPick > 2) melodyPick = 0;         // 0-2トグル
-          else if (melodyPick < 0) melodyPick = 2;
-          melody = melodyPick;  // melody に反映
-          lcdMelody();          // LCD表示
-          break;
-        case 2:
-          scrollPick += (keys == btnRIGHT) ? 1 : -1;  // scrollPickを増減
-          if (scrollPick > 1) scrollPick = 0;         // 0-1トグル
-          else if (scrollPick < 0) scrollPick = 1;
-          scroll = scrollPick;  // scroll に反映
-          lcdScroll();          // LCD表示
-          break;
-        case 3:
-          pointPick += (keys == btnRIGHT) ? 1 : -1;  // pointPickを増減
-          if (pointPick > 3) pointPick = 0;          // 0-3トグル
-          else if (pointPick < 0) pointPick = 3;
-          point = pointPick;  // point に反映
-          lcdPoint();         // LCD表示
-          break;
+      if (setPos == 0) {
+        areaPick += (keys == btnRIGHT) ? 1 : -1;  // areaPickを増減
+        if (areaPick > 2) areaPick = 0;           // 0-2トグル
+        else if (areaPick < 0) areaPick = 2;
+        area = areaPick;  // area に反映
+        lcdArea();        // LCD表示
+      } else if (setPos == 1) {
+        melodyPick += (keys == btnRIGHT) ? 1 : -1;  // melodyPickを増減
+        if (melodyPick > 2) melodyPick = 0;         // 0-2トグル
+        else if (melodyPick < 0) melodyPick = 2;
+        melody = melodyPick;  // melody に反映
+        lcdMelody();          // LCD表示
+      } else if (setPos == 2) {
+        scrollPick += (keys == btnRIGHT) ? 1 : -1;  // scrollPickを増減
+        if (scrollPick > 1) scrollPick = 0;         // 0-1トグル
+        else if (scrollPick < 0) scrollPick = 1;
+        scroll = scrollPick;  // scroll に反映
+        lcdScroll();          // LCD表示
+      } else if (setPos == 3) {
+        pointPick += (keys == btnRIGHT) ? 1 : -1;  // pointPickを増減
+        if (pointPick > 3) pointPick = 0;          // 0-3トグル
+        else if (pointPick < 0) pointPick = 3;
+        point = pointPick;  // point に反映
+        lcdPoint();         // LCD表示
       }
     }
     /* 設定LCD表示 */
     lcd.setCursor(0, 0);
     lcd.print(setPos + 1);
     lcd.print(".");
-    const char* setStrings[] = {
-      "AREA", "MELODY", "SkillScroll", "Start Point"
-    };
+    const char* setStrings[] = { "AREA", "MELODY", "SkillScroll", "Start Point" };
     lcd.print(setStrings[(int)setPos]);  // 文字列を配列で管理
     lcd.setCursor(13, 0);
     lcd.print(">UD");
@@ -134,6 +117,9 @@ void mode3() {
       if (value < 1) value = 3;
       else if (value > 3) value = 1;
       delay(300);
+      revert = false;
+      display = true;
+      startTime = 0;
       lcd.noCursor();
       lcd.clear();  // LCD初期化
       lcdAuto();    // LCD表示
@@ -272,7 +258,7 @@ void lcdPoint() {
     { "Accept.Q", "ｼﾞｭﾁｭｳｶﾗ" },  // point == 0
     { "Dango", "ｼｮｸｼﾞｶﾗ" },      // point == 1
     { "Depart.Q", "ｼｭｯﾊﾟﾂｶﾗ" },  // point == 2
-    { "Hunting", "ﾓﾝｽﾀｰﾏｴｶﾗ" },     // point == 3
+    { "Hunting", "ﾓﾝｽﾀｰﾏｴｶﾗ" },  // point == 3
   };
   lcd.print((languageFlag == 0) ? pointStrings[(int)point][0] : jp(pointStrings[(int)point][1]));
 }
@@ -307,20 +293,10 @@ void elapsedTime() {
 void displayPrev() {
   if (display) {
     lcd.setCursor(2, 0);
-    switch (dispIndex) {
-      case 0:
-        lcdArea();
-        break;
-      case 1:
-        lcdMelody();
-        break;
-      case 2:
-        lcdScroll();
-        break;
-      case 3:
-        lcdPoint();
-        break;
-    }
+    if (dispIndex == 0) lcdArea();
+    else if (dispIndex == 1) lcdMelody();
+    else if (dispIndex == 2) lcdScroll();
+    else if (dispIndex == 3) lcdPoint();
     lcd.print("    ");
     unsigned long curDispMillis = millis();
     if (curDispMillis - preDispMillis >= dispInterval) {
@@ -329,7 +305,7 @@ void displayPrev() {
     }
   }
 }
-/* LCD表示 */
+/* LCD初期表示 */
 void lcdAuto() {
   // 1列目LCD
   if (value >= 1 && value <= 3) {

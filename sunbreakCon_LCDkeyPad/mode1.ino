@@ -17,47 +17,29 @@ void mode1() {
       else if (value > 4) value = 1;
       delay(300);
       lcd.clear();   // LCD初期化
-      lcdQurious();  //LCD表示
+      lcdQurious();  // LCD初期表示
     }
 
     if (keys == btnSELECT && keysOld == btnNONE) {
-      char text[5];
       lcd.setCursor(10, 1);
-      int repeatExecution = numValue;
       switch (value) {
         /* 錬成錬成設定 */
         case 1:
           setupMode = !setupMode;
-          lcd.clear();  // LCD初期化
-          lcdQurious();
+          lcd.clear();   // LCD初期化
+          lcdQurious();  // LCD初期表示
           break;
         case 2:
           commonQuriousMacro();
           choiceEssence();  // 琥珀を選択
           runQurious();     // 傀異錬成
           countR++;
-          lcdQurious();
+          lcdQurious();  // LCD初期表示
           break;
         /* 連続傀異錬成 */
         case 3:
         case 4:
-          lcdQuriousRun();
-          firstRun = true;
-          for (int i = repeatExecution - 1; i >= 0; i--) {
-            if (firstRun) {
-              choiceQurious();  // 傀異強化の種類を選択
-              firstRun = false;
-            } else if (!firstRun) choiceCurrent();
-            choiceEssence();            // 琥珀を選択
-            runQurious();               // 傀異錬成
-            if (value == 3) capture();  // case 6のみキャプチャー
-            delay(600);
-            lcd.setCursor(11, 0);
-            lcd.print("c");
-            sprintf(text, "%4d", i);
-            lcd.print(text);
-          }
-          lcdQuriousEnd();
+          if (numValue > 0) runMode = !runMode;
           break;
       }
     }
@@ -88,41 +70,65 @@ void mode1() {
         else if (ess > 4) ess = 0;
       }
       delay(100);
-      lcd.clear();                 // LCD初期化
-      commonLcdRow1();             // 1列目LCD0-1
-      displayString(value, mode);  // 1列目LCD2-
+      lcd.clear();  // LCD初期化
       lcdSetQurious();
     }
-    lcd.setCursor(11, 0);
-    lcd.print("s");
-    commonLcdRow2();  // 2列目LCD0-2
-    lcdEssence();     // 琥珀表示
-    lcd.setCursor(11, 1);
-    lcd.print((languageFlag == 0) ? "Ess:" : jp("ｺﾊｸ:"));
-    lcd.print(ess + 1);
-    cursorPosition();
+    lcdQurious();  // カーソル表示位置の制御
     delay(100);
 
     /* 設定終了 */
     if (keys == btnSELECT && keysOld == btnNONE) {
       setupMode = !setupMode;
-      lcd.noCursor();
-      lcd.setCursor(11, 1);
-      lcd.print("SET>S");
-      lcd.setCursor(11, 0);
-      lcd.print("c");
+      lcd.noCursor();  // カーソル消灯
+      lcdQurious();    // LCD初期表示
     }
     keysOld = keys;  // 前回のキー状態を記録
   }                  // setupModeここまで
+
+  if (runMode) {
+    if (firstRun) repeatCount = numValue;
+    if (repeatCount > 0) {
+      if (firstRun) {
+        choiceQurious();  // 傀異強化の種類を選択
+        firstRun = false;
+      } else if (!firstRun) {
+        choiceCurrent();  // 強化前のステータスを選択
+      }
+      choiceEssence();            // 琥珀を選択
+      lcdQuriousRun();            // 錬成実行中のLCD表示
+      runQurious();               // 傀異錬成
+      repeatCount--;              // カウントをデクリメント
+      if (value == 3) capture();  // value 3のみキャプチャー
+      delay(600);
+      lcd.setCursor(11, 0);
+      lcd.print("c");
+      char text[4];
+      sprintf(text, "%4d", repeatCount);
+      lcd.print(text);
+    } else if (repeatCount == 0) {
+      lcdQuriousEnd();  // 錬成終了時のLCD表示
+      firstRun = true;
+      runMode = false;
+    }
+  } else if (!runMode) {
+    if (repeatCount > 0) {
+      lcd.setCursor(12, 0);  // カーソル初期位置
+      for (int i = 0; i < 4; i++) lcd.print(digitsQ[(int)i]);
+      lcd.setCursor(12, 1);
+      lcd.print("STOP");
+      firstRun = true;
+      repeatCount = false;
+    }
+  }
 }  // mode1ここまで
 
 
 /* 共通マクロ */
 void commonQuriousMacro() {
-  lcdQuriousRun();
-  choiceCurrent();
+  lcdQuriousRun();  // 実行中のLCD表示
+  choiceCurrent();  // 傀異強化の種類を選択
 }
-// 各桁の数字を更新
+/* 各桁の数字を更新 */
 void updateCountQurious() {
   updateCountGeneric(numValue, digitsQ, 4);  // digitsQを使って4桁の計算と表示
 }
@@ -139,52 +145,62 @@ void lcdEssence() {
   };
   lcd.print((languageFlag == 0) ? essStrings[(int)ess][0] : jp(essStrings[(int)ess][1]));
 }
+/* 錬成設定中のLCD表示 */
 void lcdSetQurious() {
-  lcd.setCursor(3, 1);
-  lcdEssence();
   lcd.setCursor(12, 0);
-  updateCountQurious();
-  cursorPosition();
+  updateCountQurious();  // 各桁の数字を更新
+  lcd.setCursor(3, 1);
+  lcdEssence();      // 使用琥珀の表示
+  cursorPosition();  // カーソル表示位置の制御
 }
+/* 錬成実行中のLCD表示 */
 void lcdQuriousRun() {
   lcd.setCursor(11, 1);
   lcd.print("  Run");
 }
+/* 錬成終了時のLCD表示 */
 void lcdQuriousEnd() {
   lcd.setCursor(13, 1);
   lcd.print("End");
 }
-
-/* LCD表示 */
+/* LCD初期表示 */
 void lcdQurious() {
   char text[4];
   commonLcdRow1();             // 1列目LCD0-1
   displayString(value, mode);  // 1列目LCD2-
-  lcd.setCursor(11, 0);
+  lcd.setCursor(11, 0);        // 1列目LCD共通カーソル位置
   if (value == 1) {
-    lcd.print("c");
-    lcd.setCursor(12, 0);  // カーソルの初期位置
-    for (int i = 0; i < 4; i++) lcd.print(digitsQ[(int)i]);
-    commonLcdRow2();  // 2列目LCD0-2
     if (!setupMode) {
+      lcd.print("c");
+      lcd.setCursor(12, 0);  // カーソル初期位置
+      for (int i = 0; i < 4; i++) lcd.print(digitsQ[(int)i]);
+      commonLcdRow2();         // 2列目LCD0-2
       displayString(0, mode);  // 2列目LCD3-
       lcd.setCursor(11, 1);
       lcd.print("SET>S");
+    } else if (setupMode) {
+      lcd.print("s");
+      lcd.setCursor(12, 0);  // カーソル初期位置
+      for (int i = 0; i < 4; i++) lcd.print(digitsQ[(int)i]);
+      commonLcdRow2();  // 2列目LCD0-2
+      lcdEssence();     // 琥珀表示
+      lcd.setCursor(11, 1);
+      lcd.print((languageFlag == 0) ? "Ess:" : jp("ｺﾊｸ:"));
+      lcd.print(ess + 1);  // 使用琥珀の表示
+      cursorPosition();    // カーソル表示位置の制御
     }
-  } else if (value == 2) {
-    lcd.print("t");
-    sprintf(text, "%4d", countR);
-    lcd.print(text);
+  } else if (value >= 2 && value <= 4) {
+    if (value == 2) {
+      lcd.print("t");
+      sprintf(text, "%4d", countR);
+      lcd.print(text);  // 傀異錬成回数カウンター
+    } else if (value >= 3 && value <= 4) {
+      lcd.print("c");
+      sprintf(text, "%4d", numValue);
+      lcd.print(text);  // 連続傀異錬成回数の表示
+    }
     commonLcdRow2();  // 2列目LCD0-2
-    lcdEssence();
-    lcd.setCursor(11, 1);
-    lcd.print("RUN>S");
-  } else if (value >= 3 && value <= 4) {
-    lcd.print("c");
-    sprintf(text, "%4d", numValue);
-    lcd.print(text);
-    commonLcdRow2();  // 2列目LCD0-2
-    lcdEssence();
+    lcdEssence();     // 使用琥珀LCD
     lcd.setCursor(11, 1);
     lcd.print("RUN>S");
   }

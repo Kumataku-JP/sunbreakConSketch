@@ -2,7 +2,7 @@
  *  Nintendo Switch
  *  PlayStation 5
  *  モンハンライズサンブレイク  Ver.16.0.x
- *  プログラムセット Ver.4.0.0
+ *  プログラムセット Ver.4.1.0
  *
  *  DOWN-UPボタンでモードの切り替え
  *  モード0  システム設定  / System Setting
@@ -50,11 +50,11 @@ unsigned char keys;
 unsigned char keysOld;
 
 // 各種初期値
-bool initialLcd = false;
-bool joinExecuted = false;
+bool initialLcd = true;
 bool isFirstRun = true;
 bool firstRun = true;
 bool melding = false;
+bool joinExecuted = false;
 
 // マカ錬金
 char meldingStop = 0;
@@ -181,9 +181,9 @@ const char *strings_S[][2] = {
 const char *strings_Q[][2] = {
   { "Qurious", "ｶｲｲﾚﾝｾｲ" },      // 0
   { "Config", "ｾｯﾃｲ" },          // 1
-  { "Qurious", "ｶｲｲﾚﾝｾｲ" },      // 2
-  { "RepeatRec", "ﾚﾝｾｲｷﾛｸ" },    // 3
-  { "RepeatQUR", "ﾚﾝｾｲｸﾘｶｴｼ" },  // 4
+  { "Qurious", "ﾀﾝﾊﾟﾂﾚﾝｾｲ" },    // 2
+  { "RepeatCap", "ｷｬﾌﾟﾁｬｰ" },    // 3
+  { "RepeatQUR", "ﾚﾝｿﾞｸﾚﾝｾｲ" },  // 4
 };
 // value, mode 2  / マカ錬金
 const char *strings_M[][2] = {
@@ -210,40 +210,12 @@ const char *strings_F[][2] = {
 // 選択した言語に応じて文字列を表示する関数
 void displayString(char index, char set) {
   const char *str = nullptr;
-  switch (set) {
-    case 0:
-      str = (languageFlag == 0) ? strings_S[(int)index][0] : jp(strings_S[(int)index][1]);
-      break;
-    case 1:
-      str = (languageFlag == 0) ? strings_Q[(int)index][0] : jp(strings_Q[(int)index][1]);
-      break;
-    case 2:
-      str = (languageFlag == 0) ? strings_M[(int)index][0] : jp(strings_M[(int)index][1]);
-      break;
-    case 3:
-      str = (languageFlag == 0) ? strings_A[(int)index][0] : jp(strings_A[(int)index][1]);
-      break;
-    case 4:
-      str = (languageFlag == 0) ? strings_F[(int)index][0] : jp(strings_F[(int)index][1]);
-      break;
-  }
+  if (set == 0) str = (languageFlag == 0) ? strings_S[(int)index][0] : jp(strings_S[(int)index][1]);
+  else if (set == 1) str = (languageFlag == 0) ? strings_Q[(int)index][0] : jp(strings_Q[(int)index][1]);
+  else if (set == 2) str = (languageFlag == 0) ? strings_M[(int)index][0] : jp(strings_M[(int)index][1]);
+  else if (set == 3) str = (languageFlag == 0) ? strings_A[(int)index][0] : jp(strings_A[(int)index][1]);
+  else if (set == 4) str = (languageFlag == 0) ? strings_F[(int)index][0] : jp(strings_F[(int)index][1]);
   if (str != nullptr) lcd.print(str);
-}
-
-/* ============================================================== */
-void lcdSelect() {
-  const char *strings[][2] = {
-    { "MENU", "ﾒﾆｭｰ" },
-    { "SelectEssence", "ｺﾊｸｦ ｾﾝﾀｸ" },
-    { "SelectMelding", "ﾚﾝｷﾝｦ ｾﾝﾀｸ" },
-    { "SelectAutoTyp", "ｵｰﾄｺｳﾓｸｦ ｾﾝﾀｸ" },
-    { "SelectLottery", "ﾌｸﾋﾞｷｦ ｾﾝﾀｸ" },
-  };
-  lcd.setCursor(0, 0);
-  lcd.print((languageFlag == 0) ? strings[(int)mode][0] : jp(strings[(int)mode][1]));
-
-  lcd.setCursor(13, 0);
-  lcd.print(">LR");
 }
 
 /* ============================================================== */
@@ -297,33 +269,19 @@ void commonLcdRow2() {
 /* LCD日付データ表示 */
 void showLcdDate() {
   char text[6];
-  if (languageFlag == 0) {
-    sprintf(text, setupMode ? "M%02dD%02dY%02d" : " %02d/%02d/%02d", monthDate, dayDate, yearDate);  // "MM/DD/YY"
-  } else if (languageFlag == 1) {
-    sprintf(text, setupMode ? "Y%02dM%02dD%02d" : " %02d/%02d/%02d", yearDate, monthDate, dayDate);  // "YY/MM/DD"
-  }
+  if (languageFlag == 0) sprintf(text, setupMode ? "M%02dD%02dY%02d" : " %02d/%02d/%02d", monthDate, dayDate, yearDate);       // "MM/DD/YY"
+  else if (languageFlag == 1) sprintf(text, setupMode ? "Y%02dM%02dD%02d" : " %02d/%02d/%02d", yearDate, monthDate, dayDate);  // "YY/MM/DD"
   lcd.print(text);
 }
 
 /* ============================================================== */
-void connectUp() {
-  if (!consoleType) {
-    for (char i = 0; i < 5; i++) {
-      holdButton(Button::L);
-      holdButton(Button::R, 100);
-      releaseButton(Button::L);
-      releaseButton(Button::R, 100);
-    }
-  } else {
-    pushButton(Button::HOME, 50, 600);
-  }
+void lcdSelect() {
+  lcd.setCursor(0, 0);
+  lcd.print((languageFlag == 0) ? "MENU" : jp("ﾒﾆｭｰ"));
+  lcd.setCursor(13, 0);
+  lcd.print(">LR");
 }
-/* 実行前にSwitchにUSB接続を処理 */
-void join() {
-  if (joinExecuted) return;  // 一度実行されていたら処理をスキップ
-  connectUp();
-  joinExecuted = true;  // 実行後にフラグをセット
-}
+
 /* ============================================================== */
 void updateCountGeneric(int &numResult, const int digits[], int numDigits) {
   numResult = 0;
@@ -332,10 +290,32 @@ void updateCountGeneric(int &numResult, const int digits[], int numDigits) {
     lcd.print(digits[i]);
   }
 }
+/* コントローラー接続=============================================== */
+void connectUp() {
+  if (!consoleType) {
+    for (char i = 0; i < 5; i++) {
+      holdButton(Button::L);
+      holdButton(Button::R, 100);
+      releaseButton(Button::L);
+      releaseButton(Button::R, 100);
+    }
+  } else pushButton(Button::HOME, 50, 600);
+}
+/* 実行前にSwitchにUSB接続を処理 */
+void join() {
+  if (joinExecuted) return;  // 一度実行されていたら処理をスキップ
+  lcd.clear();               // LCD初期化
+  lcd.setCursor(0, 0);
+  lcd.print("Cnnect Up");
+  connectUp();
+  lcd.clear();             // LCD初期化
+  lcdSelect();             // value = 0 1列目LCD0-
+  commonLcdRow2();         // value = 0 2列目LCD0-1
+  displayString(0, mode);  // 2列目LCD3-
+  joinExecuted = true;     // 実行後にフラグをセット
+}
 /* setup========================================================= */
-// int analogValue = 0;  // アナログ値を格納する変数
 void setup() {
-  // Serial.begin(9600);  // シリアルポートを9600bpsで開く
   /* EEPROMからデータを読み込む */
   if ((EEPROM.read(0) == 0 || EEPROM.read(0) == 1) && (EEPROM.read(1) == 0 || EEPROM.read(1) == 1) && (EEPROM.read(2) == 0 || EEPROM.read(2) == 1)) {
     bool savedLanguageFlag = EEPROM.read(0);
@@ -367,26 +347,22 @@ void setup() {
 }
 /* loop========================================================== */
 void loop() {
-  // analogValue = analogRead(0);  // アナログピン0から読み取る
-  // Serial.println(analogValue);
   keys = read_LCD_buttons(analogRead(0));
-  // DOWN - UPでモード切り替え
+  /* DOWN - UPでモード切り替え */
   if (!setupMode && !runMode) {
     if ((keys == btnDOWN || keys == btnUP) && !closeLottery) {
       mode += (keys == btnUP) ? 1 : -1;
       // ゲーム機種によるモード制限
-      if (consoleType == 0) {
-        mode = (mode > 4) ? 0 : (mode < 0) ? 4
-                                           : mode;
-      } else if (consoleType == 1) {
-        mode = (mode > 3) ? 0 : (mode < 0) ? 3
-                                           : mode;
-      }
-      prg = 0;
+      if (consoleType == 0) mode = (mode > 4) ? 0 : (mode < 0) ? 4
+                                                               : mode;
+      else if (consoleType == 1) mode = (mode > 3) ? 0 : (mode < 0) ? 3
+                                                                    : mode;
       // モード切り替え時の設定を保存
+      prg = 0;
       value = 0;
       setupMode = false;
-      initialLcd = true;
+      runMode = false;
+      initialLcd = false;      // 初回以降のLCD表示
       if (mode != 3) prg = 0;  // 闘技場オートクエスト準備初期化
       lcd.clear();             // LCD初期化
       lcdSelect();             // value = 0 1列目LCD0-
@@ -397,38 +373,23 @@ void loop() {
     }
   }
 
-  /* マクロ項目*/
-  switch (mode) {
-    // モード0の動作
-    case 0:
-      if (!initialLcd) {
-        lcd.setCursor(0, 0);
-        lcd.print(F("RISE:SUNBREAK_"));
-        lcd.print(consoleType == 0 ? F("NS") : F("PS"));
-        lcd.setCursor(0, 1);
-        lcd.print(F("v4.0 MODE>"));
-        lcd.print(languageFlag == 0 ? "UP-DWN" : jp("ｳｴorｼﾀ"));
-      } else if (value == 0) {
-        lcd.setCursor(3, 1);
-        displayString(mode, 5);  // configuration
-      }
-      mode0();
-      break;
-    // モード1の動作
-    case 1:
-      mode1();
-      break;
-    // モード2の動作
-    case 2:
-      mode2();
-      break;
-    // モード3の動作
-    case 3:
-      mode3();
-      break;
-    // モード4の動作
-    case 4:
-      mode4();
-      break;
+  /* マクロ項目 */
+  if (mode == 0) {
+    if (initialLcd) {
+      lcd.setCursor(0, 0);
+      lcd.print(F("RISE:SUNBREAK_"));
+      lcd.print(consoleType == 0 ? F("NS") : F("PS"));
+      lcd.setCursor(0, 1);
+      lcd.print(F("v4.1 MODE>"));
+      lcd.print(languageFlag == 0 ? "UP-DWN" : jp("ｳｴorｼﾀ"));
+    } else if (value == 0) {
+      lcd.setCursor(3, 1);
+      displayString(0, mode);  // 2列目LCD3-
+    }
+    mode0();
   }
+  if (mode == 1) mode1();
+  else if (mode == 2) mode2();
+  else if (mode == 3) mode3();
+  else if (mode == 4) mode4();
 }
